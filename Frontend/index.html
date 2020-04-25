@@ -1,40 +1,134 @@
 <html>
 <head>
+    <title>Simple tasks</title>
     <style>
         body {
             background-color: #aaa;
-            font-family: 'Oswald', sans-serif;
-            font-size: 18pt;
+            margin: 0;
+            padding: 0;
         }
         #wrapper {
-            width: 400;
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-flow: column;
-            border: 1px solid black;
+            height: 100%;
+            width: 100%;
         }
-        #wrapper * {
-            font-size: 18pt;
+        #contentContainer {
+            display: flex;
+            flex-flow: column;
+            overflow: auto;
+        }
+        .spacer{
+            flex: 1;
+        }
+        #inputLine {
+            display: flex;
+            flex-flow: column;
+
             padding: 10px;
-            margin: 10px;
-        }
-        .entryWrapper {
-            flex: 1;
-            border: 1px solid black;
             background-color: #0004;
-            border-radius: 8px;
-            display: flex;
-            flex-flow: column;
         }
-        .entryWrapper div {
+        #inputLine input {
+            padding: 5px;
+
+            font-family: 'Roboto', sans-serif;
+            font-size: 14pt;
+        }
+
+        #titleBar {
+            display: flex;
+            flex-flow: row;
+            flex: 0;
+
+            font-family: 'Oswald', sans-serif;
+
+            background-color: #0004;
+            padding: 10px;
+
+            align-items: center;
+            /*
+            justify-content: center;
+            */
+        }
+        .backbutton {
+            flex: 0;
+            cursor: pointer;
+            vertical-align: middle;
+            font-size: 26pt;
+        }
+        .title {
             flex: 1;
+            /*
+            border-bottom: 1px solid black;
+            */
+            padding-left: 15px;
+            padding-right: 15px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            margin: 5px;
+            cursor: text;
+            text-align: center;
+            font-size: 18pt;
+        }
+
+        .entryWrapper {
+            display: flex;
+            flex-flow: row;
+            flex: 1;
+            background-color: #fff8;
+            border-radius: 3px;
+
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 7px;
+            padding-bottom: 7px;
+            margin: 5px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14pt;
+        }
+        .entryEnterButton {
+            flex: 1;
+            cursor: pointer;
         }
         .entryWrapper button {
             flex: 1;
+        }
+        .icon {
+            flex: 0;
+
+            padding: 2;
+            padding-left:10;
+            padding-right:10;
+
+            margin-left:5;
+            margin-right:5;
+        }
+        .deletebutton {
+            color:black;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            background-color: red;
+
+        }
+        .subcounter {
+            background-color: #0003;
+            border-radius: 15px;
+            padding-left: 15px;
+            padding-right: 15px;
+            cursor: default;
+            /*
+            should allow click through...
+            pointer-events: none;
+            */
         }
 
     </style>
 
     <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
 
     <script>
         const URL = 'ws://localhost:7777';
@@ -43,9 +137,12 @@
 
         function onLoad() {
             console.clear();
-            var wrapper = document.getElementById('wrapper');
+            var contentContainer = document.getElementById('contentContainer');
+            var inputLine = document.getElementById('inputLine');
+            var titleBar = document.getElementById('titleBar');
 
-            updateDisplayedData();
+            createInputLine()
+
             connectToWebSocket();
         }
 
@@ -58,9 +155,15 @@
             });
 
             ws.addEventListener('message', (event) => {
-                console.log("Message: ", event.data);
-                const data = JSON.parse(event.data);
+                // console.log("Message: ", event.data);
+                const jsonData = JSON.parse(event.data);
 
+                if (jsonData['type'] == 'connection_established') {
+                    console.log("Connected. SocketID: ", jsonData['id']);
+                } else if (jsonData['type'] == 'update_data') {
+                    data = jsonData['data'];
+                    updateDisplayedData();
+                }
             });
 
             ws.addEventListener('close', (event) => {
@@ -76,135 +179,263 @@
             });
         }
 
-        function send(action) {
-            const data = {
-                action: action
-            }
-            ws.send(JSON.stringify(data));
+        function send(sendData) {
+            ws.send(JSON.stringify(sendData));
         }
 
     </script>
     <script>
-        let data = {
-            "description": "This is a notebook of all project",
-            "entries":{
-                "Games": {
-                    "description": "This includes all games",
-                    "entries": {
-                        "SkyTactics": {
-                            "description": "This includes all games",
-                            "entries": {
-                                "Ideas": {
-                                    "description": "Ideas bla bla",
-                                    "entries": {}
-                                },
-                            }
-                        },
-                        "Tatonka": {
-                            "description": "This includes all games",
-                            "entries": {}
-                        }
-                    }
-                },
-                "PanLab": {
-                    "description": "pan lab stuff",
-                    "entries": {
-                        "Studio raum": {
-                            "description": "This is studio stuff",
-                            "entries": {}
-                        },
-                        "GameDev": {
-                            "description": "This hmdm games",
-                            "entries": {}
-                        }
-                    }
-                }
-            }
+        let data = {};
+        let currentPath = [];
+        let input;
+
+        function getCurrentData() {
+            return accessPathData(currentPath)
+        }
+        function getParentData() {
+            const parentPath = copyCurrentPath()
+            parentPath.pop();
+            return accessPathData(parentPath);
         }
 
-        let currentPath = []
-
-        function accessPathData(pathElements)
+        function accessPathData(path)
         {
             let tmpData = data;
-            for (let pathElement of pathElements){
-                tmpData = tmpData['entries'][pathElement];
+            for (let pathElement of path){
+                tmpData = tmpData[pathElement];
             }
             return tmpData;
         }
 
         function updateDisplayedData() {
             _createEverything(getCurrentData());
+
+            if (pathToEnterWhenReceivingServerUpdate) {
+                currentPath = pathToEnterWhenReceivingServerUpdate;
+                pathToEnterWhenReceivingServerUpdate = null;
+                updateDisplayedData()
+
+            }
+
+            input.focus()
         }
 
         function _createEverything(contentData) {
-            wrapper.innerHTML = "";
-            createBackButton();
-            const entries = contentData['entries'];
+            contentContainer.innerText = "";
+
+            createTitle();
+
+            const entries = contentData;
+
             for (let key in entries) {
                 const entry = entries[key];
                 createEntry(key, entry);
             }
-
-            createAddButton();
         }
 
-        function createBackButton() {
-            const newEntryButton = document.createElement('button');
-            newEntryButton.innerHTML = currentPath.join("/") + "/"
-            newEntryButton.onclick = () => {
-                currentPath.pop()
-                updateDisplayedData();
+        function createTitle() {
+            titleBar.innerHTML = '';
+
+            if (currentPath.length > 0){
+                // Create back button
+                const backButton = document.createElement('div');
+                backButton.setAttribute('class', 'backbutton');
+                backButton.innerHTML = "🡠";
+
+                backButton.onclick = () => {
+                    currentPath.pop()
+                    updateDisplayedData();
+                }
+
+                titleBar.appendChild(backButton);
             }
-            wrapper.appendChild(newEntryButton);
+
+            // Create title text
+            const titleObject = document.createElement('div');
+            titleObject.setAttribute('class', 'title');
+            titleObject.setAttribute('contenteditable', true);
+
+            let actualTitle = currentPath[currentPath.length -1];
+            if (actualTitle)
+            {
+                const maxLength = 60;
+                if (actualTitle.length > maxLength)
+                {
+                    actualTitle = actualTitle.substring(0, maxLength) + "..."
+                }
+            }
+            else
+            {
+                actualTitle = "Simple Tasks"
+            }
+
+            titleObject.innerText = actualTitle;
+
+            const originalText = actualTitle;
+
+            titleObject.onblur = () => {
+                sendRename(originalText, titleObject.innerText);
+            }
+            titleObject.onkeydown = (e) => {
+                if (e.key == 'Escape') {
+                    titleObject.innerText = originalText;
+                    input.focus();
+                    return false;
+                }
+                if (e.key == 'Enter') {
+                    if (titleObject.value == ""){
+                        titleObject.innerText = originalText;
+                    }
+                    input.focus(); // this will call the onblur function
+                    return false;
+                }
+            }
+            titleBar.appendChild(titleObject);
         }
 
-        function getCurrentData() {
-            return accessPathData(currentPath)
+        function sendRename(oldName, newName) {
+            const path = copyCurrentPath();
+            path.pop();
+
+            send({
+                'action': 'rename_entry',
+                'path': path,
+                'old': oldName,
+                'new': newName
+            })
+
+            pathToEnterWhenReceivingServerUpdate = path;
+            pathToEnterWhenReceivingServerUpdate.push(newName)
         }
 
         function createEntry(entryName, entryData) {
             const newEntryWrapper = document.createElement('div');
-            const att = document.createAttribute('class');
             newEntryWrapper.setAttribute('class', 'entryWrapper');
 
-            const newEntryButton = document.createElement('button');
-            newEntryButton.innerHTML = entryName;
-            // newEntryButton.setAttribute('class', 'entryWrapper');
-
-            const newEntryDescription = document.createElement('div');
-            newEntryDescription.innerHTML = entryData['description'];
+            // Add button to enter sub-level
+            const newEntryButton = document.createElement('div');
+            let entryText = entryName;
+            const maxLength = 256
+            if (entryText.length > maxLength){
+                entryText = entryText.substring(0, maxLength) + "..."
+            }
+            newEntryButton.setAttribute('class', 'entryEnterButton');
+            newEntryButton.innerText = entryText;
 
             newEntryWrapper.appendChild(newEntryButton);
-            newEntryWrapper.appendChild(newEntryDescription);
 
             newEntryButton.onclick = () => {
-                const entries = entryData['entries'];
-
-                if (Object.keys(entries).length > 0) {
-                    currentPath.push(entryName);
-                    updateDisplayedData();
-                } else {
-                    // console.log("No sub-elements")
+                // Enter sub-level
+                const entries = entryData
+                currentPath.push(entryName);
+                updateDisplayedData();
+                /*
+                const stateObj = {
+                    "currentPath": currentPath;
                 }
+                history.pushState(stateObj, )
+                */
             };
 
-            wrapper.appendChild(newEntryWrapper);
+            // Add description
+            const description = entryData['description'];
+            if (description) {
+                const newEntryDescription = document.createElement('div');
+                newEntryDescription.innerText = description;
+                newEntryWrapper.appendChild(newEntryDescription);
+            }
+
+            // Add sub-tasks counter
+            // const subTasks = Object.keys(entryData).length;
+            const subTasks = Object.keys(entryData).length;
+            if (subTasks > 0){
+                const subtaskscounter = document.createElement('div');
+                subtaskscounter.setAttribute('class', 'icon subcounter');
+                subtaskscounter.innerText = subTasks;
+                newEntryWrapper.appendChild(subtaskscounter);
+            }
+
+            // Add delete button
+            const deleteButton = document.createElement('div');
+            deleteButton.setAttribute('class', 'icon deletebutton');
+            deleteButton.innerText = "X";
+            newEntryWrapper.appendChild(deleteButton);
+
+            deleteButton.onclick = () => {
+                if (subTasks > 0){
+                    if (!confirm("There are sub-tasks, do you really want to delete this?"))
+                        return;
+                }
+                const entries = entryData;
+                delete getCurrentData()[entryName];
+
+                let deletePath = copyCurrentPath();
+                deletePath.push(entryName);
+                updateDisplayedData();
+
+                send({
+                    'action': 'delete_entry',
+                    'path': deletePath
+                })
+            };
+
+            contentContainer.appendChild(newEntryWrapper);
         }
 
-        function createAddButton() {
-            const newEntryButton = document.createElement('button');
-            newEntryButton.innerHTML = "+";
-            newEntryButton.onclick = () => {
+        function createInputLine() {
+            input = document.createElement('input');
+            input.innerText = "+";
+            input.onclick = () => {
 
             }
-            wrapper.appendChild(newEntryButton);
+            input.onkeypress = (e) => {
+                if (input.value == "")
+                    return;
+
+                if (e.key == 'Enter') {
+                    const newEntryText = input.value;
+                    input.value = '';
+
+                    if (e.shiftKey) {
+                        pathToEnterWhenReceivingServerUpdate = copyCurrentPath()
+                        pathToEnterWhenReceivingServerUpdate.push(newEntryText);
+                    }
+
+                    addEntry(newEntryText);
+                }
+
+            }
+            inputLine.appendChild(input);
         }
+
+        function addEntry(text){
+            const sendData = {
+                'action': 'add_entry',
+                'path': currentPath,
+                'text': text
+            }
+            send(sendData);
+        }
+
+        function copyCurrentPath() {
+            let newPath = []
+
+            for (let part of currentPath)
+                newPath.push(part);
+
+            return newPath;
+        }
+
+        let pathToEnterWhenReceivingServerUpdate = null
     </script>
 </head>
 
 <body onload="onLoad()">
-    <div id="wrapper">
+    <div id='wrapper'>
+        <div id="titleBar"></div>
+        <div id="contentContainer"></div>
+        <div class='spacer'></div>
+        <div id="inputLine"></div>
     </div>
 </body>
 </html>

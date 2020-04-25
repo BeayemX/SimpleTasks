@@ -1,0 +1,25 @@
+{
+  "Simple Tasks": {
+    "Tasks": {
+      "Mit Arrow keys Entries ausw\u00e4hlen und mit enter rein springen k\u00f6nnen": {},
+      "mit escape zur\u00fcck gehen bzw auch f\u00fcr mobil": {},
+      "rearrange m\u00f6glichkeit": {},
+      "max l\u00e4nge f\u00fcr texte nicht nur beim print sondern auch, dass die gar nicht angelegt werden d\u00fcrfen?": {},
+      "lange texte in einer textarea bearbeitbar machen?": {},
+      "zeilen umbr\u00fcche erlauben?": {},
+      "Nicht-Ziele": {
+        "Bilder": {},
+        "Markdown": {},
+        "Hyperlinks? w\u00e4r schon cool": {}
+      },
+      "da evtl in die Browser History schreiben?": {},
+      "PWA - Service Worker": {}
+    },
+    "Multiuser": {
+      "Login": {}
+    },
+    "lokale / offline \u00e4nderungen": {},
+    "da dann irgendwie mit den \u00e4nderungen am server vergleichen / mergen": {},
+    "mit flask hosten": {}
+  }
+}
