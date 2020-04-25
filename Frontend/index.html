@@ -1,0 +1,210 @@
+<html>
+<head>
+    <style>
+        body {
+            background-color: #aaa;
+            font-family: 'Oswald', sans-serif;
+            font-size: 18pt;
+        }
+        #wrapper {
+            width: 400;
+            display: flex;
+            flex-flow: column;
+            border: 1px solid black;
+        }
+        #wrapper * {
+            font-size: 18pt;
+            padding: 10px;
+            margin: 10px;
+        }
+        .entryWrapper {
+            flex: 1;
+            border: 1px solid black;
+            background-color: #0004;
+            border-radius: 8px;
+            display: flex;
+            flex-flow: column;
+        }
+        .entryWrapper div {
+            flex: 1;
+        }
+        .entryWrapper button {
+            flex: 1;
+        }
+
+    </style>
+
+    <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet">
+
+    <script>
+        const URL = 'ws://localhost:7777';
+        const RECONNECT_TIMEOUT = 2500;
+        let ws;
+
+        function onLoad() {
+            console.clear();
+            var wrapper = document.getElementById('wrapper');
+
+            updateDisplayedData();
+            connectToWebSocket();
+        }
+
+        function connectToWebSocket() {
+            ws = new WebSocket(URL);
+            // Connect to websockets
+
+            ws.addEventListener('open', (event) => {
+                console.log("Connected");
+            });
+
+            ws.addEventListener('message', (event) => {
+                console.log("Message: ", event.data);
+                const data = JSON.parse(event.data);
+
+            });
+
+            ws.addEventListener('close', (event) => {
+                console.log("Close");
+                setTimeout(() => {
+                    console.log("Trying to reconnect...")
+                    connectToWebSocket()
+                }, RECONNECT_TIMEOUT);
+            });
+
+            ws.addEventListener('error', (event) => {
+                console.log("Error connecting.");
+            });
+        }
+
+        function send(action) {
+            const data = {
+                action: action
+            }
+            ws.send(JSON.stringify(data));
+        }
+
+    </script>
+    <script>
+        let data = {
+            "description": "This is a notebook of all project",
+            "entries":{
+                "Games": {
+                    "description": "This includes all games",
+                    "entries": {
+                        "SkyTactics": {
+                            "description": "This includes all games",
+                            "entries": {
+                                "Ideas": {
+                                    "description": "Ideas bla bla",
+                                    "entries": {}
+                                },
+                            }
+                        },
+                        "Tatonka": {
+                            "description": "This includes all games",
+                            "entries": {}
+                        }
+                    }
+                },
+                "PanLab": {
+                    "description": "pan lab stuff",
+                    "entries": {
+                        "Studio raum": {
+                            "description": "This is studio stuff",
+                            "entries": {}
+                        },
+                        "GameDev": {
+                            "description": "This hmdm games",
+                            "entries": {}
+                        }
+                    }
+                }
+            }
+        }
+
+        let currentPath = []
+
+        function accessPathData(pathElements)
+        {
+            let tmpData = data;
+            for (let pathElement of pathElements){
+                tmpData = tmpData['entries'][pathElement];
+            }
+            return tmpData;
+        }
+
+        function updateDisplayedData() {
+            _createEverything(getCurrentData());
+        }
+
+        function _createEverything(contentData) {
+            wrapper.innerHTML = "";
+            createBackButton();
+            const entries = contentData['entries'];
+            for (let key in entries) {
+                const entry = entries[key];
+                createEntry(key, entry);
+            }
+
+            createAddButton();
+        }
+
+        function createBackButton() {
+            const newEntryButton = document.createElement('button');
+            newEntryButton.innerHTML = currentPath.join("/") + "/"
+            newEntryButton.onclick = () => {
+                currentPath.pop()
+                updateDisplayedData();
+            }
+            wrapper.appendChild(newEntryButton);
+        }
+
+        function getCurrentData() {
+            return accessPathData(currentPath)
+        }
+
+        function createEntry(entryName, entryData) {
+            const newEntryWrapper = document.createElement('div');
+            const att = document.createAttribute('class');
+            newEntryWrapper.setAttribute('class', 'entryWrapper');
+
+            const newEntryButton = document.createElement('button');
+            newEntryButton.innerHTML = entryName;
+            // newEntryButton.setAttribute('class', 'entryWrapper');
+
+            const newEntryDescription = document.createElement('div');
+            newEntryDescription.innerHTML = entryData['description'];
+
+            newEntryWrapper.appendChild(newEntryButton);
+            newEntryWrapper.appendChild(newEntryDescription);
+
+            newEntryButton.onclick = () => {
+                const entries = entryData['entries'];
+
+                if (Object.keys(entries).length > 0) {
+                    currentPath.push(entryName);
+                    updateDisplayedData();
+                } else {
+                    // console.log("No sub-elements")
+                }
+            };
+
+            wrapper.appendChild(newEntryWrapper);
+        }
+
+        function createAddButton() {
+            const newEntryButton = document.createElement('button');
+            newEntryButton.innerHTML = "+";
+            newEntryButton.onclick = () => {
+
+            }
+            wrapper.appendChild(newEntryButton);
+        }
+    </script>
+</head>
+
+<body onload="onLoad()">
+    <div id="wrapper">
+    </div>
+</body>
+</html>
