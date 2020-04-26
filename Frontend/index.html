@@ -608,8 +608,13 @@
 
             } else {
                 if (document.activeElement !== titleObject){
-                    if (!e.shiftKey && !e.altKey && !e.controlKey)
+                    if (e.key == 'Shift' || e.key == 'Control' || e.key == 'Alt') {
+
+                    } else {
                         focusInput();
+                    }
+                    console.log(e.key)
+
                 }
             }
         }

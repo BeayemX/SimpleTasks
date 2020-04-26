@@ -52,8 +52,6 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                 delete_element = delete_path[-1]
                 delete_path = delete_path[:-1]
 
-                print("will delete", delete_element, "from", delete_path)
-
                 with open("data.json") as f:
                     user_data = json.load(f)
                 try:
