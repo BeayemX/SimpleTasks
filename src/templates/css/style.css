@@ -146,3 +146,12 @@ body {
     pointer-events: none;
     */
 }
+.clientIdLabel{
+    text-align: right;
+    padding: 2px;
+    font-family: monospace;
+    color: grey;
+    font-size: 10pt;
+    background-color: transparent;
+    flex-wrap: wrap;
+}

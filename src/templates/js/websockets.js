@@ -1,9 +1,11 @@
 const URL = 'ws://localhost:7777';
+
 const RECONNECT_TIMEOUT = 2500;
 let ws;
 
 function onLoad() {
-    console.clear();
+    // console.clear();
+
     var contentContainer = document.getElementById('contentContainer');
     var inputLine = document.getElementById('inputLine');
     var titleBar = document.getElementById('titleBar');
@@ -30,6 +32,9 @@ function connectToWebSocket() {
 
         if (jsonData['type'] == 'connection_established') {
             console.log("Connected. SocketID: ", jsonData['id']);
+            send({
+                'action': 'request_data'
+            })
         } else if (jsonData['type'] == 'update_data') {
             data = jsonData['data'];
             updateDisplayedData();
@@ -50,5 +55,6 @@ function connectToWebSocket() {
 }
 
 function send(sendData) {
+    sendData['client_id'] = clientID;
     ws.send(JSON.stringify(sendData));
 }

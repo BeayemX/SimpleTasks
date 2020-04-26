@@ -10,8 +10,13 @@ import websockets
 ADDRESS = '0.0.0.0'
 PORT = 7777
 
+data_storage_path = "DataStorage"
+
 # Members
 open_connections = set()
+
+if not os.path.exists(data_storage_path):
+    os.mkdir(data_storage_path)
 
 async def handle_messages(websocket, path): # Will be called once per established connection
     await register(websocket)
@@ -19,14 +24,25 @@ async def handle_messages(websocket, path): # Will be called once per establishe
         async for message in websocket:
             data = json.loads(message)
             print(data)
-            if data['action'] == 'add_entry':
-                with open("data.json") as f:
-                    user_data = json.load(f)
-                try:
-                    current_data = user_data
-                except KeyError:
-                    user_data = {}
-                    current_data = user_data
+
+
+            if not 'client_id' in data:
+                print("No client ID provided, cancelling request...")
+                continue
+
+
+            client_id = data['client_id']
+
+            if not file_exists(client_id):
+                print("You are not a registered user!")
+                continue
+
+
+            if data['action'] == 'request_data':
+                await update_data(websocket, client_id)
+            elif data['action'] == 'add_entry':
+
+                user_data, current_data = load_data(client_id)
 
                 for path_part in data['path']:
                     current_data = current_data[path_part]
@@ -37,34 +53,25 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                 # Add data
                 current_data[safe_name] = {}
 
-                with open("data.json", 'w') as f:
-                    json.dump(user_data, f, indent=4)
+                write_data(client_id, user_data)
 
-                await update_data(websocket)
+                await update_data(websocket, client_id)
 
             elif data['action'] == 'delete_entry':
                 delete_path = data['path']
                 delete_element = delete_path[-1]
                 delete_path = delete_path[:-1]
 
-                with open("data.json") as f:
-                    user_data = json.load(f)
-                try:
-                    current_data = user_data
-                except KeyError:
-                    user_data = {}
-                    current_data = user_data
+                user_data, current_data = load_data(client_id)
 
                 for path_part in delete_path:
                     current_data = current_data[path_part]
 
                 del current_data[delete_element]
 
+                write_data(client_id, user_data)
 
-                with open("data.json", 'w') as f:
-                    json.dump(user_data, f, indent=4)
-
-                await update_data(websocket)
+                await update_data(websocket, client_id)
 
 
             elif data['action'] == 'rename_entry':
@@ -72,7 +79,7 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                 old_name = data['old']
                 new_name = data['new']
 
-                user_data, current_data = load_data()
+                user_data, current_data = load_data(client_id)
 
                 for path_part in rename_path:
                     current_data = current_data[path_part]
@@ -80,17 +87,16 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                 current_data[new_name] = current_data[old_name]
                 del current_data[old_name]
 
-                with open("data.json", 'w') as f:
-                    json.dump(user_data, f, indent=4)
+                write_data(client_id, user_data)
 
-                await update_data(websocket)
+                await update_data(websocket, client_id)
 
             elif data['action'] == 'move_entry':
                 working_path = data['path']
                 current_index = data['currentIndex']
                 target_index = data['newIndex']
 
-                user_data, current_data = load_data()
+                user_data, current_data = load_data(client_id)
 
                 for path_part in working_path:
                     current_data = current_data[path_part]
@@ -128,9 +134,8 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                 except IndexError: # working on root level
                     user_data = reordered_data
 
-                with open("data.json", 'w') as f:
-                    json.dump(user_data, f, indent=4)
-                await update_data(websocket)
+                write_data(client_id, user_data)
+                await update_data(websocket, client_id)
 
             elif data['action'] == 'paste_data':
                 paste_path = data['path']
@@ -140,7 +145,7 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                 cut_path = data['cut_data']['path']
 
                 # Read data
-                user_data, current_data = load_data()
+                user_data, current_data = load_data(client_id)
 
                 ## Prepare cut data
                 if execute_cut:
@@ -162,11 +167,8 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                 current_paste_data[paste_name] = paste_data
 
                 # Write data
-                with open("data.json", 'w') as f:
-                    json.dump(user_data, f, indent=4)
-                await update_data(websocket)
-
-
+                write_data(client_id, user_data)
+                await update_data(websocket, client_id)
 
 
     except asyncio.streams.IncompleteReadError:
@@ -175,17 +177,6 @@ async def handle_messages(websocket, path): # Will be called once per establishe
         print("ConnectionClosed")
     finally:
         await unregister(websocket)
-
-def load_data():
-    with open("data.json") as f:
-        user_data = json.load(f)
-    try:
-        current_data = user_data
-    except KeyError:
-        user_data = {}
-        current_data = user_data
-
-    return user_data, current_data
 
 async def register(websocket):
     open_connections.add(websocket)
@@ -202,7 +193,7 @@ async def register(websocket):
         'id': socket_id
     }))
 
-    await update_data(websocket)
+    #await update_data(websocket, client_id)
 
     # Send current game state to new user
     # await websocket.send(gameserver.get_serialized_state())
@@ -217,10 +208,9 @@ async def unregister(websocket):
     open_connections.remove(websocket)
 
 
-async def update_data(websocket):
+async def update_data(websocket, client_id):
     # Load user data
-    with open("data.json") as f:
-        user_data = json.load(f)
+    user_data, client_data = load_data(client_id)
 
     await websocket.send(json.dumps({
         'type': 'update_data',
@@ -231,6 +221,32 @@ async def update_data(websocket):
 # # # # # #
 # Helper  #
 # # # # # #
+def file_exists(client_id):
+    try:
+        with open(f"{data_storage_path}/{client_id}.json", 'r') as f:
+            pass
+    except:
+        return False
+
+    return True
+
+def load_data(client_id):
+    try:
+        with open(f"{data_storage_path}/{client_id}.json", 'r') as f:
+            user_data = json.load(f)
+    except FileNotFoundError:
+        user_data = {}
+        with open(f"{data_storage_path}/{client_id}.json", 'a+') as f:
+            json.dump(user_data, f)
+
+    current_data = user_data
+
+    return user_data, current_data # FIXME [Legacy] Returning the same object...
+
+def write_data(client_id, new_user_data):
+    # Use w+ if it should create for users
+    with open(f"{data_storage_path}/{client_id}.json", 'w+') as f:
+        json.dump(new_user_data, f, indent=4)
 
 def get_overwrite_safe_name(target_name, data):
     contender = target_name
