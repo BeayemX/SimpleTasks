@@ -265,11 +265,11 @@
             }
             deselectEntries();
         }
-
+        let titleObject;
         function createTitle() {
             titleBar.innerHTML = '';
 
-            if (currentPath.length > 0){
+            if (currentPath.length > 0) {
                 // Create back button
                 const backButton = document.createElement('div');
                 backButton.setAttribute('class', 'backbutton');
@@ -283,9 +283,10 @@
             }
 
             // Create title text
-            const titleObject = document.createElement('div');
+            titleObject = document.createElement('div');
             titleObject.setAttribute('class', 'title');
-            titleObject.setAttribute('contenteditable', true);
+            if (currentPath.length > 0)
+                titleObject.setAttribute('contenteditable', true);
 
             let actualTitle = currentPath[currentPath.length -1];
             if (actualTitle)
@@ -306,7 +307,6 @@
             const originalText = actualTitle;
 
             titleObject.onblur = () => {
-                console.log(titleObject.innerText, originalText)
                 if (titleObject.innerText == originalText)
                     return;
 
@@ -536,7 +536,8 @@
                     entryElements[selectedEntryIndex].delete();
                     return false;
                 }
-
+            } else if (e.key == 'F2') {
+                titleObject.focus()
             } else {
                 console.log(e.key)
             }
