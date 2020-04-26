@@ -353,6 +353,16 @@ function createTitle() {
 }
 
 
+function scrollTop() {
+    contentContainer.scrollTop = 0;
+}
+function scrollBottom() {
+    contentContainer.scrollTop = contentContainer.scrollHeight;
+}
+function scrollView(delta) {
+    contentContainer.scrollTop += delta * 50;
+}
+
 // // // // // // // // // //
 // WebSocket Communication //
 // // // // // // // // // //
@@ -493,7 +503,7 @@ function globalKeyDownHandler(e) {
         focusInput();
         return false;
     } else if (e.key == 'ArrowLeft') {
-        if (e.altKey){
+        if (e.altKey) {
             goBack();
             return false;
         } else {
@@ -509,15 +519,21 @@ function globalKeyDownHandler(e) {
                 moveEntry(1);
         }
     } else if (e.key == 'ArrowUp') {
-        if (e.altKey)
+        if (e.altKey) {
             moveEntry(-1);
-        else
+        } else if (e.ctrlKey) {
+            scrollView(-1);
+        } else {
             selectEntry(-1);
+        }
     } else if (e.key == 'ArrowDown') {
-        if (e.altKey)
+        if (e.altKey) {
             moveEntry(1);
-        else
+        } else if (e.ctrlKey) {
+            scrollView(1)
+        } else {
             selectEntry(1);
+        }
     } else if (e.key == 'Escape') {
         deselectEntries();
     } else if (e.key == 'Home') {
@@ -555,6 +571,10 @@ function globalKeyDownHandler(e) {
     } else if (e.key == 'x' && e.ctrlKey) {
         if (selectedEntryIndex >= 0)
             cutSelectedEntry();
+    } else if (e.key == 'PageUp') {
+        scrollTop();
+    } else if (e.key == 'PageDown') {
+        scrollBottom();
     } else {
         if (!isFocused(titleObject)){
             if (e.key == 'Shift' || e.key == 'Control' || e.key == 'Alt') {
