@@ -1,5 +1,5 @@
 {
-  "Simple Tasks": {
+  "App tasks": {
     "Tasks": {
       "Mit Arrow keys Entries ausw\u00e4hlen und mit enter rein springen k\u00f6nnen": {},
       "mit escape zur\u00fcck gehen bzw auch f\u00fcr mobil": {},
@@ -20,6 +20,9 @@
     },
     "lokale / offline \u00e4nderungen": {},
     "da dann irgendwie mit den \u00e4nderungen am server vergleichen / mergen": {},
-    "mit flask hosten": {}
+    "mit flask hosten": {},
+    "Bugs": {
+      "wenn entries nur zahlen sind, werden die vor allen anderen entries aufgelistet": {}
+    }
   }
 }

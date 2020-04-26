@@ -55,13 +55,15 @@
         .backbutton {
             flex: 0;
             cursor: pointer;
-            vertical-align: middle;
-            font-size: 26pt;
+            font-size: 140%;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
         }
         .title {
             flex: 1;
-            /*
             border-bottom: 1px solid black;
+            /*
             */
             padding-left: 15px;
             padding-right: 15px;
@@ -80,20 +82,20 @@
             background-color: #fff8;
             border-radius: 3px;
 
-            padding-left: 10px;
+            padding-left: 15px;
             padding-right: 10px;
             padding-top: 7px;
             padding-bottom: 7px;
             margin: 5px;
             font-family: 'Roboto', sans-serif;
             font-size: 14pt;
+
+            align-items: center;
+
         }
         .entryEnterButton {
             flex: 1;
             cursor: pointer;
-        }
-        .entryWrapper button {
-            flex: 1;
         }
         .icon {
             flex: 0;
@@ -106,18 +108,21 @@
             margin-right:5;
         }
         .deletebutton {
-            color:black;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 5px;
-            background-color: red;
+            font-size: 140%;
+            color:red;
 
+            border: 1px solid red;
+            border-radius: 100%;
+
+            cursor: pointer;
         }
         .subcounter {
             background-color: #0003;
             border-radius: 15px;
             padding-left: 15px;
             padding-right: 15px;
+            padding-top: 5px;
+            padding-bottom: 5px;
             cursor: default;
             /*
             should allow click through...
@@ -144,6 +149,8 @@
             createInputLine()
 
             connectToWebSocket();
+
+            document.onkeydown = globalKeyDownHandler;
         }
 
         function connectToWebSocket() {
@@ -185,6 +192,10 @@
 
     </script>
     <script>
+        const TITLE = "Tasks & Notes";
+        const DELETE_ICON = "&#10060;";
+        const BACK_ARROW = "&#129120;";
+
         let data = {};
         let currentPath = [];
         let input;
@@ -240,11 +251,10 @@
                 // Create back button
                 const backButton = document.createElement('div');
                 backButton.setAttribute('class', 'backbutton');
-                backButton.innerHTML = "🡠";
+                backButton.innerHTML = BACK_ARROW;
 
                 backButton.onclick = () => {
-                    currentPath.pop()
-                    updateDisplayedData();
+                    goBack();
                 }
 
                 titleBar.appendChild(backButton);
@@ -266,7 +276,7 @@
             }
             else
             {
-                actualTitle = "Simple Tasks"
+                actualTitle = TITLE;
             }
 
             titleObject.innerText = actualTitle;
@@ -274,7 +284,15 @@
             const originalText = actualTitle;
 
             titleObject.onblur = () => {
-                sendRename(originalText, titleObject.innerText);
+                console.log(titleObject.innerText, originalText)
+                if (titleObject.innerText == originalText)
+                    return;
+
+                if (!titleObject.innerText) {
+                    titleObject.innerText = originalText;
+                } else {
+                    sendRename(originalText, titleObject.innerText);
+                }
             }
             titleObject.onkeydown = (e) => {
                 if (e.key == 'Escape') {
@@ -283,9 +301,7 @@
                     return false;
                 }
                 if (e.key == 'Enter') {
-                    if (titleObject.value == ""){
-                        titleObject.innerText = originalText;
-                    }
+
                     input.focus(); // this will call the onblur function
                     return false;
                 }
@@ -345,24 +361,31 @@
                 newEntryWrapper.appendChild(newEntryDescription);
             }
 
-            // Add sub-tasks counter
-            // const subTasks = Object.keys(entryData).length;
-            const subTasks = Object.keys(entryData).length;
-            if (subTasks > 0){
-                const subtaskscounter = document.createElement('div');
-                subtaskscounter.setAttribute('class', 'icon subcounter');
-                subtaskscounter.innerText = subTasks;
-                newEntryWrapper.appendChild(subtaskscounter);
+            let subTasksCounter = 0;
+            function countSubTasks(subData) {
+                for (let key of Object.keys(subData)) {
+                    subTasksCounter += 1;
+                    countSubTasks(subData[key]);
+                }
+            }
+
+            countSubTasks(entryData);
+
+            if (subTasksCounter > 0){
+                const subTasksCounterLabel = document.createElement('div');
+                subTasksCounterLabel.setAttribute('class', 'icon subcounter');
+                subTasksCounterLabel.innerText = subTasksCounter;
+                newEntryWrapper.appendChild(subTasksCounterLabel);
             }
 
             // Add delete button
             const deleteButton = document.createElement('div');
             deleteButton.setAttribute('class', 'icon deletebutton');
-            deleteButton.innerText = "X";
+            deleteButton.innerHTML = DELETE_ICON;
             newEntryWrapper.appendChild(deleteButton);
 
             deleteButton.onclick = () => {
-                if (subTasks > 0){
+                if (subTasksCounter > 0){
                     if (!confirm("There are sub-tasks, do you really want to delete this?"))
                         return;
                 }
@@ -427,6 +450,23 @@
         }
 
         let pathToEnterWhenReceivingServerUpdate = null
+
+        function goBack() {
+            currentPath.pop()
+            updateDisplayedData();
+        }
+
+        function globalKeyDownHandler(e) {
+            if (e.key == 'Tab') {
+                input.focus();
+                return false;
+            } else if (e.key == 'ArrowLeft') {
+                if (e.altKey)
+                    goBack();
+            } else {
+                // console.log(e.key)
+            }
+        }
     </script>
 </head>
 
