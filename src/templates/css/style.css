@@ -18,6 +18,9 @@ body {
     flex-flow: column;
     overflow: auto;
 }
+::-webkit-scrollbar {
+    display: none;
+}
 .spacer{
     flex: 1;
 }
