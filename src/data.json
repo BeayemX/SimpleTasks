@@ -48,22 +48,8 @@
         },
         "Maybe features": {},
         "keep selected index when going back in history": {},
-        "backup von der json datei bei jeder \u00e4nderung?": {}
+        "backup von der json datei bei jeder \u00e4nderung?": {},
+        "Type to select (Type ahead search)": {}
     },
-    "test": {
-        "zwei": {},
-        "eins11111": {
-            "eins eins": {
-                "a": {
-                    "b": {
-                        "c": {
-                            "d": {
-                                "e": {}
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    "Test": {}
 }

@@ -65,6 +65,30 @@ function copyCurrentPath() {
 }
 
 
+// // // // // // //
+// Rearrange data //
+// // // // // // //
+
+function reparentEntry() {
+}
+
+let copyData = {
+    'name': '',
+    'data': ''
+};
+function copySelectedEntry() {
+    copyData.name = entryElements[selectedEntryIndex].name;
+    copyData.data = entryElements[selectedEntryIndex].data;
+
+    console.log("Copy", copyData);
+}
+
+function pasteSelectedEntry() {
+    console.log("Paste", copyData);
+    sendPaste()
+}
+
+
 // // // // // //
 // Input Focus //
 // // // // // //
@@ -98,6 +122,11 @@ function updateDisplayedData() {
 function createEntry(entryName, entryData) {
     const newEntryWrapper = document.createElement('div');
     newEntryWrapper.setAttribute('class', 'entryWrapper');
+
+    // for copying
+    newEntryWrapper.name = entryName;
+    newEntryWrapper.data = entryData;
+    // copy end
 
     newEntryWrapper.select = () => {
         newEntryWrapper.classList.add('focused');
@@ -321,7 +350,6 @@ function createTitle() {
     send(sendData);
 }
 
-
 function moveEntry(delta) {
     if (entryElements.length == 0)
         return;
@@ -354,6 +382,23 @@ function sendRename(oldName, newName) {
     pathToEnterWhenReceivingServerUpdate = path;
     pathToEnterWhenReceivingServerUpdate.push(newName)
 }
+
+function sendPaste() {
+    if (!copyData['data'])
+        return
+
+    const sendData = {
+        'action': 'paste_data',
+        'path': getCurrentPath(),
+        'data': copyData
+    }
+    send(sendData);
+}
+
+
+// // // // // // // // // //
+// Path and History Stuff  //
+// // // // // // // // // //
 
 function setPath(path) {
     _currentPath = path;
@@ -407,6 +452,9 @@ function selectEntry(delta) {
 }
 
 function selectEntryWithIndex(newIndex) {
+    if (isFocused(titleObject))
+        return
+
     if (selectedEntryIndex >= 0)
         deselectEntries();
 
@@ -481,6 +529,12 @@ function globalKeyDownHandler(e) {
         if (isFocused(titleObject)) // Therefore this should not be executed then
             document.execCommand('selectAll', false, null);
 
+    } else if (e.key == 'c' && e.ctrlKey) {
+        if (selectedEntryIndex >= 0)
+            copySelectedEntry();
+    } else if (e.key == 'v' && e.ctrlKey) {
+        if (selectedEntryIndex >= 0)
+            pasteSelectedEntry();
     } else {
         if (!isFocused(titleObject)){
             if (e.key == 'Shift' || e.key == 'Control' || e.key == 'Alt') {
@@ -501,4 +555,7 @@ function globalKeyDownHandler(e) {
 
 function clamp(min, max, value) {
     return Math.max(min, Math.min(max, value));
+}
+
+function find(text) {
 }

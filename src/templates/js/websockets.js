@@ -7,6 +7,7 @@ function onLoad() {
     var contentContainer = document.getElementById('contentContainer');
     var inputLine = document.getElementById('inputLine');
     var titleBar = document.getElementById('titleBar');
+    var body = document.body;
 
     createInputLine()
 

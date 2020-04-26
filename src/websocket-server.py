@@ -32,15 +32,10 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                     current_data = current_data[path_part]
 
                 # Avoid overwriting
-                new_text = data['text']
-                or_new_text = new_text
-                counter = 2
-                while new_text in current_data:
-                    new_text = or_new_text + str(counter)
-                    counter += 1
+                safe_name = get_overwrite_safe_name(data['text'], current_data)
 
                 # Add data
-                current_data[new_text] = {}
+                current_data[safe_name] = {}
 
                 with open("data.json", 'w') as f:
                     json.dump(user_data, f, indent=4)
@@ -137,6 +132,25 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                     json.dump(user_data, f, indent=4)
                 await update_data(websocket)
 
+            elif data['action'] == 'paste_data':
+                paste_path = data['path']
+                paste_name = data['data']['name']
+                paste_data = data['data']['data']
+
+                # Read data
+                user_data, current_data = load_data()
+
+                for path_part in paste_path:
+                    current_data = current_data[path_part]
+
+                paste_name = get_overwrite_safe_name(paste_name, current_data)
+                current_data[paste_name] = paste_data
+
+                # Write data
+                with open("data.json", 'w') as f:
+                    json.dump(user_data, f, indent=4)
+                await update_data(websocket)
+
 
 
 
@@ -197,6 +211,20 @@ async def update_data(websocket):
         'type': 'update_data',
         'data': user_data
     }))
+
+
+# # # # # #
+# Helper  #
+# # # # # #
+
+def get_overwrite_safe_name(target_name, data):
+    contender = target_name
+    or_new_text = target_name
+    counter = 2
+    while contender in data:
+        contender = or_new_text + str(counter)
+        counter += 1
+    return contender
 
 # Start server loop
 print("Starting server on port " + str(PORT))
