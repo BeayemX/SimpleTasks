@@ -20,10 +20,16 @@
     },
     "lokale / offline \u00e4nderungen": {},
     "da dann irgendwie mit den \u00e4nderungen am server vergleichen / mergen": {},
-    "mit flask hosten": {},
     "Bugs": {
       "wenn entries nur zahlen sind, werden die vor allen anderen entries aufgelistet": {}
-    }
+    },
+    "Mit Flask hosten": {
+      "tasks.pixelpackers.com": {},
+      "zwei server? f\u00fcr static website und f\u00fcr websockets?": {}
+    },
+    "scroll to bottom when adding new entry": {}
   },
-  "Tests": {}
+  "Tests": {
+    "nie": {}
+  }
 }
