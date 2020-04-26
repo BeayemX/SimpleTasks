@@ -24,5 +24,6 @@
     "Bugs": {
       "wenn entries nur zahlen sind, werden die vor allen anderen entries aufgelistet": {}
     }
-  }
+  },
+  "Tests": {}
 }

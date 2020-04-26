@@ -3,9 +3,11 @@
     <title>Simple tasks</title>
     <style>
         body {
-            background-color: #aaa;
+            background-color: rgb(77, 77, 77);
+            background-color: #5a5a5a;
             margin: 0;
             padding: 0;
+            color: #ddd;
         }
         #wrapper {
             margin: 0;
@@ -28,13 +30,14 @@
             flex-flow: column;
 
             padding: 10px;
-            background-color: #0004;
+            background-color: #2a2a2a;
         }
         #inputLine input {
             padding: 5px;
 
             font-family: 'Roboto', sans-serif;
             font-size: 14pt;
+            background-color: #ccc;
         }
 
         #titleBar {
@@ -44,7 +47,7 @@
 
             font-family: 'Oswald', sans-serif;
 
-            background-color: #0004;
+            background-color: #2a2a2a;
             padding: 10px;
 
             align-items: center;
@@ -62,7 +65,7 @@
         }
         .title {
             flex: 1;
-            border-bottom: 1px solid black;
+            border-bottom: 1px solid #ddd;
             /*
             */
             padding-left: 15px;
@@ -79,19 +82,24 @@
             display: flex;
             flex-flow: row;
             flex: 1;
-            background-color: #fff8;
+
+            background-color: #0006;
             border-radius: 3px;
 
             padding-left: 15px;
             padding-right: 10px;
             padding-top: 7px;
             padding-bottom: 7px;
-            margin: 5px;
+
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: 6px;
+            margin-bottom: 6px;
+
             font-family: 'Roboto', sans-serif;
             font-size: 14pt;
 
             align-items: center;
-
         }
         .entryEnterButton {
             flex: 1;
@@ -111,13 +119,14 @@
             font-size: 140%;
             color:red;
 
-            border: 1px solid red;
+            border: 2px solid red;
             border-radius: 100%;
 
             cursor: pointer;
         }
         .subcounter {
-            background-color: #0003;
+            background-color: #fff3;
+
             border-radius: 15px;
             padding-left: 15px;
             padding-right: 15px;
