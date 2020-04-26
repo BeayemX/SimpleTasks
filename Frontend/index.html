@@ -522,7 +522,10 @@
         function moveEntry(delta) {
             let newPosition = selectedEntryIndex + delta;
             newPosition = Math.max(0, Math.min(entryElements.length - 1, newPosition))
-            console.log(selectedEntryIndex, "Should be ", newPosition)
+
+            if (newPosition != selectedEntryIndex) {
+                console.log(selectedEntryIndex, "Should be ", newPosition)
+            }
         }
 
         let selectedEntryIndex = -1;

@@ -1,8 +1,6 @@
 {
-  "App tasks": {
+  "App Tasks": {
     "Tasks": {
-      "Mit Arrow keys Entries ausw\u00e4hlen und mit enter rein springen k\u00f6nnen": {},
-      "mit escape zur\u00fcck gehen bzw auch f\u00fcr mobil": {},
       "rearrange m\u00f6glichkeit": {},
       "max l\u00e4nge f\u00fcr texte nicht nur beim print sondern auch, dass die gar nicht angelegt werden d\u00fcrfen?": {},
       "lange texte in einer textarea bearbeitbar machen?": {},
@@ -13,7 +11,8 @@
         "Hyperlinks? w\u00e4r schon cool": {}
       },
       "da evtl in die Browser History schreiben?": {},
-      "PWA - Service Worker": {}
+      "PWA - Service Worker": {},
+      "entries in place renamen mit F2 wenn die selektiert sind?": {}
     },
     "Multiuser": {
       "Login": {}
@@ -27,9 +26,15 @@
       "tasks.pixelpackers.com": {},
       "zwei server? f\u00fcr static website und f\u00fcr websockets?": {}
     },
-    "scroll to bottom when adding new entry": {}
+    "scroll to bottom when adding new entry": {},
+    "code clean up + auf github geben": {},
+    "Fancy Features": {
+      "Suche": {},
+      "Copy & Paste": {}
+    },
+    "Mobil": {
+      "Android-Back Button Unterst\u00fctzung": {}
+    }
   },
-  "Tests": {
-    "nie": {}
-  }
+  "test": {}
 }
