@@ -1,23 +1,12 @@
 {
-    "Test values": {
-        "eins": {},
-        "zwei": {},
-        "drei": {},
-        "vier": {},
-        "f\u00fcnf": {},
-        "sechs": {},
-        "7. ": {},
-        "8.": {},
-        "9asfdasdf": {},
-        "10": {}
-    },
     "App Features": {
         "code clean up + auf github geben": {},
         "variable die speicher wer gerade den focus hat. auch entsprechend die keyhandler anpassen": {},
         "subtasks anzeigen": {},
         "cut/copy and paste auch f\u00fcr drag and drop verwenden": {},
         "[ BUGS ]": {
-            "number-only dict-keys will be listed first. probably a javascript problem, and not really implementation specific": {}
+            "number-only dict-keys will be listed first. probably a javascript problem, and not really implementation specific": {},
+            "wenn ich einen Entry rename, geht die forward history verloren": {}
         },
         "Tasks": {
             "max l\u00e4nge f\u00fcr texte nicht nur beim print sondern auch, dass die gar nicht angelegt werden d\u00fcrfen?": {},
@@ -60,5 +49,21 @@
         "Maybe features": {},
         "keep selected index when going back in history": {},
         "backup von der json datei bei jeder \u00e4nderung?": {}
+    },
+    "test": {
+        "zwei": {},
+        "eins11111": {
+            "eins eins": {
+                "a": {
+                    "b": {
+                        "c": {
+                            "d": {
+                                "e": {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

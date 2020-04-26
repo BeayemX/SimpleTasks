@@ -7,8 +7,11 @@ const DELETE_ICON = "&#10060;";
 const BACK_ARROW = "&#129120;";
 
 // Members
+// let history = []
+let historyIndex = 0;
+
 let data = {};
-let currentPath = [];
+let _currentPath = [];
 let selectedEntryIndex = -1; // Always set below 0 when not in use, maybe below-zero-setting not necessary any more when using focus-states
 
 // HTML Elements
@@ -27,8 +30,14 @@ let selectedIndexAfterUpdate = -1;
  * Data Access
  ** ** ** ** ** ** ** */
 
+function getCurrentPath() {
+    let path = [];
+    path = path.concat(_currentPath.slice(0, historyIndex));
+    return path;
+}
+
 function getCurrentData() {
-    return accessPathData(currentPath)
+    return accessPathData(getCurrentPath())
 }
 
 function getParentData() {
@@ -49,7 +58,7 @@ function accessPathData(path)
 function copyCurrentPath() {
     let newPath = []
 
-    for (let part of currentPath)
+    for (let part of getCurrentPath())
         newPath.push(part);
 
     return newPath;
@@ -71,10 +80,10 @@ function updateDisplayedData() {
     _createEverything(getCurrentData());
 
     if (pathToEnterWhenReceivingServerUpdate) {
-        currentPath = pathToEnterWhenReceivingServerUpdate;
+        const tmpPath = pathToEnterWhenReceivingServerUpdate; // Prevent endless recursion
         pathToEnterWhenReceivingServerUpdate = null;
-        updateDisplayedData()
 
+        setPath(tmpPath);
     }
 
     deselectEntries();
@@ -100,8 +109,8 @@ function createEntry(entryName, entryData) {
 
     newEntryWrapper.enter = () => {
          // Enter sub-level
-        currentPath.push(entryName);
-        updateDisplayedData();
+        pushPath(entryName);
+
         /*
         const stateObj = {
             "currentPath": currentPath;
@@ -226,10 +235,19 @@ function _createEverything(contentData) {
     }
 }
 
+function getTitle() {
+    const currPath = getCurrentPath();
+    return currPath[currPath.length -1];
+}
+
+function isAtRootLevel() {
+    return historyIndex == 0;
+}
+
 function createTitle() {
     titleBar.innerHTML = '';
 
-    if (currentPath.length > 0) {
+    if (!isAtRootLevel()) {
         // Create back button
         const backButton = document.createElement('div');
         backButton.setAttribute('class', 'backbutton');
@@ -245,10 +263,10 @@ function createTitle() {
     // Create title text
     titleObject = document.createElement('div');
     titleObject.setAttribute('class', 'title');
-    if (currentPath.length > 0)
+    if (!isAtRootLevel())
         titleObject.setAttribute('contenteditable', true);
 
-    let actualTitle = currentPath[currentPath.length -1];
+    let actualTitle = getTitle();
     if (actualTitle)
     {
         const maxLength = 60;
@@ -298,7 +316,7 @@ function createTitle() {
  function addEntry(text){
     const sendData = {
         'action': 'add_entry',
-        'path': currentPath,
+        'path': getCurrentPath(),
         'text': text
     }
     send(sendData);
@@ -310,12 +328,12 @@ function moveEntry(delta) {
         return;
 
     let newPosition = selectedEntryIndex + delta;
-    newPosition = Math.max(0, Math.min(entryElements.length - 1, newPosition))
+    newPosition = clamp(0, entryElements.length - 1, newPosition);
 
     if (newPosition != selectedEntryIndex) {
         send({
             "action": 'move_entry',
-            "path": currentPath,
+            "path": getCurrentPath(),
             "currentIndex": selectedEntryIndex,
             "newIndex": newPosition
         })
@@ -338,9 +356,36 @@ function sendRename(oldName, newName) {
     pathToEnterWhenReceivingServerUpdate.push(newName)
 }
 
-function goBack() {
-    currentPath.pop()
+function setPath(path) {
+    _currentPath = path;
+    historyIndex = _currentPath.length;
     updateDisplayedData();
+}
+
+function pushPath(path) {
+    _currentPath = getCurrentPath(); // remove forward-history
+    _currentPath.push(path);
+
+    historyIndex = _currentPath.length;
+
+    updateDisplayedData();
+}
+
+function changeHistory(delta) {
+    const originalHistoryIndex = historyIndex;
+    historyIndex = clamp(0, _currentPath.length, historyIndex + delta);
+
+    if (originalHistoryIndex != historyIndex) {
+        updateDisplayedData();
+    }
+}
+
+function goBack() {
+    changeHistory(-1);
+}
+
+function goForward() {
+    changeHistory(1);
 }
 
 function deselectEntries() {
@@ -356,7 +401,7 @@ function selectEntry(delta) {
 
     let newIndex = selectedEntryIndex;
     newIndex += delta;
-    newIndex = Math.max(0, Math.min(entryElements.length - 1, newIndex))
+    newIndex = clamp(0, entryElements.length - 1, newIndex);
 
     deselectEntries();
     selectEntryWithIndex(newIndex);
@@ -393,7 +438,8 @@ function globalKeyDownHandler(e) {
         }
     } else if (e.key == 'ArrowRight') {
         if (e.altKey) {
-            // goForward(); # TODO implement?
+            goForward();
+            return false;
         } else {
             if (selectedEntryIndex >= 0)
                 moveEntry(1);
@@ -446,4 +492,8 @@ function globalKeyDownHandler(e) {
             // console.log(e.key)
         }
     }
+}
+// Utilities
+function clamp(min, max, value) {
+    return Math.max(min, Math.min(max, value));
 }
