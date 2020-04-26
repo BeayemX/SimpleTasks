@@ -494,7 +494,7 @@
             updateDisplayedData();
         }
 
-        function deselectEntries(delta) {
+        function deselectEntries() {
             for (let element of entryElements)
                 element.deselect();
 
@@ -508,8 +508,21 @@
             newIndex = Math.max(0, Math.min(entryElements.length - 1, newIndex))
 
             deselectEntries();
-            entryElements[newIndex].select();
+            selectEntryWithIndex(newIndex);
+        }
+
+        function selectEntryWithIndex(newIndex) {
+            if (selectedEntryIndex >= 0)
+                deselectEntries();
+
             selectedEntryIndex = newIndex;
+            entryElements[selectedEntryIndex].select();
+        }
+
+        function moveEntry(delta) {
+            let newPosition = selectedEntryIndex + delta;
+            newPosition = Math.max(0, Math.min(entryElements.length - 1, newPosition))
+            console.log(selectedEntryIndex, "Should be ", newPosition)
         }
 
         let selectedEntryIndex = -1;
@@ -520,12 +533,35 @@
             } else if (e.key == 'ArrowLeft') {
                 if (e.altKey)
                     goBack();
+                else {
+                    if (selectedEntryIndex >= 0)
+                        moveEntry(-1);
+                }
+            } else if (e.key == 'ArrowRight') {
+                if (e.altKey) {
+                    // goForward(); # TODO implement?
+                } else {
+                    if (selectedEntryIndex >= 0)
+                        moveEntry(1);
+                }
             } else if (e.key == 'ArrowUp') {
-                selectEntry(-1);
+                if (e.altKey)
+                    moveEntry(-1);
+                else
+                    selectEntry(-1);
             } else if (e.key == 'ArrowDown') {
-                selectEntry(1);
+                if (e.altKey)
+                    moveEntry(1);
+                else
+                    selectEntry(1);
             } else if (e.key == 'Escape') {
                 deselectEntries();
+            } else if (e.key == 'Home') {
+                if (entryElements.length > 0)
+                    selectEntryWithIndex(0);
+            } else if (e.key == 'End') {
+                if (entryElements.length > 0)
+                    selectEntryWithIndex(entryElements.length - 1);
             } else if (e.key == 'Enter') {
                 if (selectedEntryIndex >= 0) {
                     entryElements[selectedEntryIndex].enter();
