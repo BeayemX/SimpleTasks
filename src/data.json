@@ -1,24 +1,39 @@
 {
-    "[ToDo] Tasks": {
+    "Test values": {
+        "eins": {},
+        "zwei": {},
+        "drei": {},
+        "vier": {},
+        "f\u00fcnf": {},
+        "sechs": {},
+        "7. ": {},
+        "8.": {},
+        "9asfdasdf": {},
+        "10": {}
+    },
+    "App Features": {
         "code clean up + auf github geben": {},
         "variable die speicher wer gerade den focus hat. auch entsprechend die keyhandler anpassen": {},
+        "subtasks anzeigen": {},
         "cut/copy and paste auch f\u00fcr drag and drop verwenden": {},
         "[ BUGS ]": {
             "number-only dict-keys will be listed first. probably a javascript problem, and not really implementation specific": {}
         },
         "Tasks": {
-            "rearrange m\u00f6glichkeit": {},
             "max l\u00e4nge f\u00fcr texte nicht nur beim print sondern auch, dass die gar nicht angelegt werden d\u00fcrfen?": {},
             "lange texte in einer textarea bearbeitbar machen?": {},
             "zeilen umbr\u00fcche erlauben?": {},
-            "da evtl in die Browser History schreiben?": {},
+            "da evtl in die Browser History schreiben? history kann ich mir ja ganz einfach merken wenn ich einfach immer copyPath() mach": {},
             "Nicht-Ziele": {
                 "Bilder": {},
                 "Markdown": {},
                 "Hyperlinks? w\u00e4r schon cool": {}
             },
             "PWA - Service Worker": {},
-            "entries in place renamen mit F2 wenn die selektiert sind?": {}
+            "entries in place renamen mit F2 wenn die selektiert sind?": {},
+            "use fallback icons / images for utf icons?": {},
+            "wenn ich einen eintrag l\u00f6sche kommt der in einen papierkorb-eintrag?": {},
+            "multi selektion": {}
         },
         "Multiuser": {
             "Login": {}
@@ -42,17 +57,8 @@
             "Zoom level": {},
             "Responsive design?": {}
         },
-        "Maybe features": {}
-    },
-    "Test values": {
-        "eins": {},
-        "zwei": {},
-        "drei": {},
-        "vier": {},
-        "f\u00fcnf": {},
-        "sechs": {},
-        "7. ": {},
-        "8.": {},
-        "9asfdasdf": {}
+        "Maybe features": {},
+        "keep selected index when going back in history": {},
+        "backup von der json datei bei jeder \u00e4nderung?": {}
     }
 }
