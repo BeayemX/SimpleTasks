@@ -146,6 +146,7 @@ function createEntry(entryName, entryData) {
 
     newEntryWrapper.select = () => {
         newEntryWrapper.classList.add('focused');
+        newEntryWrapper.scrollIntoView(false);
     };
     newEntryWrapper.deselect = () => {
         newEntryWrapper.classList.remove('focused');
