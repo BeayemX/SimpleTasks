@@ -522,18 +522,24 @@ function globalKeyDownHandler(e) {
     } else if (e.key == 'ArrowUp') {
         if (e.altKey) {
             moveEntry(-1);
+            return false;
         } else if (e.ctrlKey) {
             scrollView(-1);
+            return false;
         } else {
             selectEntry(-1);
+            return false;
         }
     } else if (e.key == 'ArrowDown') {
         if (e.altKey) {
             moveEntry(1);
+            return false;
         } else if (e.ctrlKey) {
             scrollView(1)
+            return false;
         } else {
             selectEntry(1);
+            return false;
         }
     } else if (e.key == 'Escape') {
         deselectEntries();
