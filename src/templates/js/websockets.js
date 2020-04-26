@@ -1,4 +1,5 @@
-const URL = 'ws://localhost:7777';
+// const URL = 'ws://localhost:8193';
+const URL = 'ws://' + document.domain + ':8193';
 
 const RECONNECT_TIMEOUT = 2500;
 let ws;

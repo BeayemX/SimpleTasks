@@ -7,7 +7,7 @@ import json
 # Flask
 from flask import Flask, render_template
 
-PORT = 7999
+PORT = 8192
 DEBUG = False
 
 # Initialize server
@@ -26,4 +26,4 @@ def user(client_id):
 
 if __name__ == '__main__':
     print(f"Running server on port {PORT}")
-    app.run('0.0.0.0', port=PORT)
+    app.run(port=PORT)

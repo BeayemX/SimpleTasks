@@ -8,7 +8,7 @@ import websockets
 
 # Configuration
 ADDRESS = '0.0.0.0'
-PORT = 7777
+PORT = 8193
 
 data_storage_path = "DataStorage"
 
