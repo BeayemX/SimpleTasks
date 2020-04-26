@@ -1,8 +1,5 @@
 {
     "[ToDo] Tasks": {
-        "[ BUGS ]": {
-            "number-only dict-keys will be listed first. probably a javascript problem, and not really implementation specific": {}
-        },
         "Tasks": {
             "max l\u00e4nge f\u00fcr texte nicht nur beim print sondern auch, dass die gar nicht angelegt werden d\u00fcrfen?": {},
             "rearrange m\u00f6glichkeit": {},
@@ -16,6 +13,9 @@
             },
             "PWA - Service Worker": {},
             "entries in place renamen mit F2 wenn die selektiert sind?": {}
+        },
+        "[ BUGS ]": {
+            "number-only dict-keys will be listed first. probably a javascript problem, and not really implementation specific": {}
         },
         "Multiuser": {
             "Login": {}
@@ -32,10 +32,13 @@
             "Suche": {},
             "Copy & Paste": {},
             "In der URL gleich den pfad mitgeben. /AppTasks/FancyFeatures": {},
-            "Cool w\u00e4r, wenn ich sub tasks aufklappen k\u00f6nnte ohne den Sub-Level zu betreten": {}
+            "Cool w\u00e4r, wenn ich sub tasks aufklappen k\u00f6nnte ohne den Sub-Level zu betreten": {},
+            "Improve Desktop Experience. Columns?": {}
         },
         "Mobil": {
-            "Android-Back Button Unterst\u00fctzung": {}
+            "Android-Back Button Unterst\u00fctzung": {},
+            "Zoom level": {},
+            "Responsive design?": {}
         },
         "Maybe features": {}
     },

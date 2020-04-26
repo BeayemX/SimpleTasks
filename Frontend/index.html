@@ -461,11 +461,12 @@
             input.onclick = () => {
             }
             input.onkeypress = (e) => {
-                if (input.value == "")
+                const actualInputValue = input.value.trim();
+                if (actualInputValue == "")
                     return;
 
                 if (e.key == 'Enter') {
-                    const newEntryText = input.value;
+                    const newEntryText = actualInputValue;
                     input.value = '';
 
                     if (e.shiftKey) {
