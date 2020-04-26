@@ -26,9 +26,9 @@ let pathToEnterWhenReceivingServerUpdate = null;
 let selectedIndexAfterUpdate = -1;
 
 
-/* ** ** ** ** ** ** **
- * Data Access
- ** ** ** ** ** ** ** */
+// // // // // //
+// Data Access //
+// // // // // //
 
 function getCurrentPath() {
     let path = [];
@@ -65,17 +65,16 @@ function copyCurrentPath() {
 }
 
 
-/* ** ** ** ** ** ** **
-* Input Focus
- ** ** ** ** ** ** ** */
+// // // // // //
+// Input Focus //
+// // // // // //
 function isFocused(element) {
     return document.activeElement === element;
 }
 
-/* ** ** ** ** ** ** **
- * User Interface
- ** ** ** ** ** ** ** */
-
+// // // // // // //
+// User Interface //
+// // // // // // //
 function updateDisplayedData() {
     _createEverything(getCurrentData());
 
@@ -309,9 +308,9 @@ function createTitle() {
 }
 
 
-/* ** ** ** ** ** ** **
- * WebSocket Communication
- ** ** ** ** ** ** ** */
+// // // // // // // // // //
+// WebSocket Communication //
+// // // // // // // // // //
 
  function addEntry(text){
     const sendData = {
@@ -420,9 +419,9 @@ function selectEntryWithIndex(newIndex) {
 
 
 
-/* ** ** ** ** ** ** **
- * Keyboard Handler
- ** ** ** ** ** ** ** */
+// // // // // // // //
+// Keyboard Handler  //
+// // // // // // // //
 
 function globalKeyDownHandler(e) {
     if (e.key == 'Tab') {
@@ -493,7 +492,13 @@ function globalKeyDownHandler(e) {
         }
     }
 }
-// Utilities
+
+
+// // // // // //
+// Utilities   //
+// // // // // //
+
+
 function clamp(min, max, value) {
     return Math.max(min, Math.min(max, value));
 }
