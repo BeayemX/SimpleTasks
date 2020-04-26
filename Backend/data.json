@@ -1,7 +1,7 @@
 {
-    "App Tasks": {
+    "[ToDo] Tasks": {
         "[ BUGS ]": {
-            "number-only dict-keys will be listed first": {}
+            "number-only dict-keys will be listed first. probably a javascript problem, and not really implementation specific": {}
         },
         "Tasks": {
             "max l\u00e4nge f\u00fcr texte nicht nur beim print sondern auch, dass die gar nicht angelegt werden d\u00fcrfen?": {},
@@ -40,8 +40,8 @@
         "Maybe features": {}
     },
     "Test values": {
-        "zwei": {},
         "eins": {},
+        "zwei": {},
         "drei": {},
         "vier": {},
         "f\u00fcnf": {},
