@@ -136,15 +136,30 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                 paste_path = data['path']
                 paste_name = data['data']['name']
                 paste_data = data['data']['data']
+                execute_cut = data['cut_data']['execute_cut']
+                cut_path = data['cut_data']['path']
 
                 # Read data
                 user_data, current_data = load_data()
 
-                for path_part in paste_path:
-                    current_data = current_data[path_part]
+                ## Prepare cut data
+                if execute_cut:
+                    current_cut_data = current_data
+                    for path_part in cut_path:
+                        current_cut_data = current_cut_data[path_part]
 
-                paste_name = get_overwrite_safe_name(paste_name, current_data)
-                current_data[paste_name] = paste_data
+                    # overwrite paste_data that was sent with actual values that are removed by cutting
+                    paste_data = current_cut_data[paste_name]
+                    del current_cut_data[paste_name]
+
+                ## Prepare paste data
+                current_paste_data = current_data
+
+                for path_part in paste_path:
+                    current_paste_data = current_paste_data[path_part]
+
+                paste_name = get_overwrite_safe_name(paste_name, current_paste_data)
+                current_paste_data[paste_name] = paste_data
 
                 # Write data
                 with open("data.json", 'w') as f:

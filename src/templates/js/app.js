@@ -76,16 +76,32 @@ let copyData = {
     'name': '',
     'data': ''
 };
+let cutData = {
+    'execute_cut': false,
+    'path': ""
+};
+
 function copySelectedEntry() {
     copyData.name = entryElements[selectedEntryIndex].name;
     copyData.data = entryElements[selectedEntryIndex].data;
 
-    console.log("Copy", copyData);
+    cutData.execute_cut = false;
+    cutData.path = "";
 }
 
 function pasteSelectedEntry() {
-    console.log("Paste", copyData);
-    sendPaste()
+    sendPaste();
+
+    if (cutData.execute_cut)  {
+        copyData.name = "";
+        copyData.data = "";
+    }
+}
+
+function cutSelectedEntry() {
+    copySelectedEntry();
+    cutData.execute_cut = true;
+    cutData.path = getCurrentPath();
 }
 
 
@@ -390,7 +406,8 @@ function sendPaste() {
     const sendData = {
         'action': 'paste_data',
         'path': getCurrentPath(),
-        'data': copyData
+        'data': copyData,
+        'cut_data': cutData
     }
     send(sendData);
 }
@@ -535,6 +552,9 @@ function globalKeyDownHandler(e) {
     } else if (e.key == 'v' && e.ctrlKey) {
         if (selectedEntryIndex >= 0)
             pasteSelectedEntry();
+    } else if (e.key == 'x' && e.ctrlKey) {
+        if (selectedEntryIndex >= 0)
+            cutSelectedEntry();
     } else {
         if (!isFocused(titleObject)){
             if (e.key == 'Shift' || e.key == 'Control' || e.key == 'Alt') {

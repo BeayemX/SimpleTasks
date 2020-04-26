@@ -51,5 +51,9 @@
         "backup von der json datei bei jeder \u00e4nderung?": {},
         "Type to select (Type ahead search)": {}
     },
-    "Test": {}
+    "Test": {
+        "a": {},
+        "b": {},
+        "c": {}
+    }
 }
