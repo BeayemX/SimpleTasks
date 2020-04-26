@@ -1,40 +1,47 @@
 {
-  "App Tasks": {
-    "Tasks": {
-      "rearrange m\u00f6glichkeit": {},
-      "max l\u00e4nge f\u00fcr texte nicht nur beim print sondern auch, dass die gar nicht angelegt werden d\u00fcrfen?": {},
-      "lange texte in einer textarea bearbeitbar machen?": {},
-      "zeilen umbr\u00fcche erlauben?": {},
-      "Nicht-Ziele": {
-        "Bilder": {},
-        "Markdown": {},
-        "Hyperlinks? w\u00e4r schon cool": {}
-      },
-      "da evtl in die Browser History schreiben?": {},
-      "PWA - Service Worker": {},
-      "entries in place renamen mit F2 wenn die selektiert sind?": {}
+    "App Tasks": {
+        "Tasks": {
+            "max l\u00e4nge f\u00fcr texte nicht nur beim print sondern auch, dass die gar nicht angelegt werden d\u00fcrfen?": {},
+            "rearrange m\u00f6glichkeit": {},
+            "lange texte in einer textarea bearbeitbar machen?": {},
+            "zeilen umbr\u00fcche erlauben?": {},
+            "da evtl in die Browser History schreiben?": {},
+            "Nicht-Ziele": {
+                "Bilder": {},
+                "Markdown": {},
+                "Hyperlinks? w\u00e4r schon cool": {}
+            },
+            "PWA - Service Worker": {},
+            "entries in place renamen mit F2 wenn die selektiert sind?": {}
+        },
+        "Multiuser": {
+            "Login": {}
+        },
+        "lokale / offline \u00e4nderungen": {},
+        "da dann irgendwie mit den \u00e4nderungen am server vergleichen / mergen": {},
+        "Bugs": {
+            "wenn entries nur zahlen sind, werden die vor allen anderen entries aufgelistet": {}
+        },
+        "Mit Flask hosten": {
+            "tasks.pixelpackers.com": {},
+            "zwei server? f\u00fcr static website und f\u00fcr websockets?": {}
+        },
+        "scroll to bottom when adding new entry": {},
+        "code clean up + auf github geben": {},
+        "Fancy Features": {
+            "Suche": {},
+            "Copy & Paste": {},
+            "In der URL gleich den pfad mitgeben. /AppTasks/FancyFeatures": {}
+        },
+        "Mobil": {
+            "Android-Back Button Unterst\u00fctzung": {}
+        }
     },
-    "Multiuser": {
-      "Login": {}
-    },
-    "lokale / offline \u00e4nderungen": {},
-    "da dann irgendwie mit den \u00e4nderungen am server vergleichen / mergen": {},
-    "Bugs": {
-      "wenn entries nur zahlen sind, werden die vor allen anderen entries aufgelistet": {}
-    },
-    "Mit Flask hosten": {
-      "tasks.pixelpackers.com": {},
-      "zwei server? f\u00fcr static website und f\u00fcr websockets?": {}
-    },
-    "scroll to bottom when adding new entry": {},
-    "code clean up + auf github geben": {},
-    "Fancy Features": {
-      "Suche": {},
-      "Copy & Paste": {}
-    },
-    "Mobil": {
-      "Android-Back Button Unterst\u00fctzung": {}
+    "test": {
+        "eins": {},
+        "zwei": {},
+        "drei": {},
+        "vier": {},
+        "f\u00fcnf": {}
     }
-  },
-  "test": {}
 }

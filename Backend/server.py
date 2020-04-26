@@ -43,7 +43,7 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                 current_data[new_text] = {}
 
                 with open("data.json", 'w') as f:
-                    json.dump(user_data, f, indent=2)
+                    json.dump(user_data, f, indent=4)
 
                 await update_data(websocket)
 
@@ -69,7 +69,7 @@ async def handle_messages(websocket, path): # Will be called once per establishe
 
 
                 with open("data.json", 'w') as f:
-                    json.dump(user_data, f, indent=2)
+                    json.dump(user_data, f, indent=4)
 
                 await update_data(websocket)
 
@@ -84,18 +84,59 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                 for path_part in rename_path:
                     current_data = current_data[path_part]
 
-                print("before")
-                print(json.dumps(current_data, indent=2))
-
                 current_data[new_name] = current_data[old_name]
                 del current_data[old_name]
 
-                print("after")
-                print(json.dumps(current_data, indent=2))
+                with open("data.json", 'w') as f:
+                    json.dump(user_data, f, indent=4)
+
+                await update_data(websocket)
+
+            elif data['action'] == 'move_entry':
+                working_path = data['path']
+                current_index = data['currentIndex']
+                target_index = data['newIndex']
+
+                user_data, current_data = load_data()
+
+                for path_part in working_path:
+                    current_data = current_data[path_part]
+
+                reordered_data = {}
+
+                index_counter = 0
+                cached_key = None
+                for key in current_data:
+                    # Moving selected entry up
+                    if index_counter == target_index and not cached_key:
+                        cached_key = key
+                        index_counter += 1
+                        continue
+
+                    # Moving selected entry down
+                    if index_counter == current_index and not cached_key:
+                        cached_key = key
+                        index_counter += 1
+                        continue
+
+                    reordered_data[key] = current_data[key]
+
+                    if cached_key:
+                        reordered_data[cached_key] = current_data[cached_key]
+
+                    index_counter += 1
+
+                try:
+                    current_data = user_data
+                    for path_part in working_path[:-1]:
+                        current_data = current_data[path_part]
+
+                    current_data[working_path[-1]] = reordered_data
+                except IndexError: # working on root level
+                    user_data = reordered_data
 
                 with open("data.json", 'w') as f:
-                    json.dump(user_data, f, indent=2)
-
+                    json.dump(user_data, f, indent=4)
                 await update_data(websocket)
 
 
