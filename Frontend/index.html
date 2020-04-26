@@ -369,8 +369,8 @@
                 */
              }
 
-             newEntryWrapper.delete = () => {
-                if (subTasksCounter > 0){
+             newEntryWrapper.delete = (askForConfirmationForSubtasks = true) => {
+                if (subTasksCounter > 0 && askForConfirmationForSubtasks) {
                     if (!confirm("There are sub-tasks, do you really want to delete this?"))
                         return;
                 }
@@ -533,7 +533,7 @@
                 }
             } else if (e.key == 'Delete') {
                 if (selectedEntryIndex >= 0) {
-                    entryElements[selectedEntryIndex].delete();
+                    entryElements[selectedEntryIndex].delete(askForConfirmationForSubtasks = !e.shiftKey);
                     return false;
                 }
             } else if (e.key == 'F2') {
