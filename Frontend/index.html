@@ -513,6 +513,9 @@
         }
 
         function selectEntry(delta) {
+            if (entryElements.length == 0)
+                return;
+
             let newIndex = selectedEntryIndex;
             newIndex += delta;
             newIndex = Math.max(0, Math.min(entryElements.length - 1, newIndex))
@@ -533,6 +536,9 @@
         }
 
         function moveEntry(delta) {
+            if (entryElements.length == 0)
+                return;
+
             let newPosition = selectedEntryIndex + delta;
             newPosition = Math.max(0, Math.min(entryElements.length - 1, newPosition))
 
