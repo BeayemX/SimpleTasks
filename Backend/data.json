@@ -1,5 +1,8 @@
 {
     "App Tasks": {
+        "[ BUGS ]": {
+            "number-only dict-keys will be listed first": {}
+        },
         "Tasks": {
             "max l\u00e4nge f\u00fcr texte nicht nur beim print sondern auch, dass die gar nicht angelegt werden d\u00fcrfen?": {},
             "rearrange m\u00f6glichkeit": {},
@@ -19,9 +22,6 @@
         },
         "lokale / offline \u00e4nderungen": {},
         "da dann irgendwie mit den \u00e4nderungen am server vergleichen / mergen": {},
-        "Bugs": {
-            "wenn entries nur zahlen sind, werden die vor allen anderen entries aufgelistet": {}
-        },
         "Mit Flask hosten": {
             "tasks.pixelpackers.com": {},
             "zwei server? f\u00fcr static website und f\u00fcr websockets?": {}
@@ -31,17 +31,22 @@
         "Fancy Features": {
             "Suche": {},
             "Copy & Paste": {},
-            "In der URL gleich den pfad mitgeben. /AppTasks/FancyFeatures": {}
+            "In der URL gleich den pfad mitgeben. /AppTasks/FancyFeatures": {},
+            "Cool w\u00e4r, wenn ich sub tasks aufklappen k\u00f6nnte ohne den Sub-Level zu betreten": {}
         },
         "Mobil": {
             "Android-Back Button Unterst\u00fctzung": {}
         }
     },
-    "test": {
+    "Test values": {
         "eins": {},
         "zwei": {},
         "drei": {},
         "vier": {},
-        "f\u00fcnf": {}
+        "f\u00fcnf": {},
+        "sechs": {},
+        "7. ": {},
+        "8.": {},
+        "9asfdasdf": {}
     }
 }

@@ -103,7 +103,11 @@
         }
 
         .focused{
+            /*
             border: 1px solid cyan;
+            box-sizing: border-box; // this does not work, it should prevent the content size from resizing when showing border
+            */
+            border-left: 5px solid cyan;
         }
 
         .entryEnterButton {
@@ -206,6 +210,9 @@
 
     </script>
     <script>
+        // Configuration
+        const cut_off_long_texts = false;
+
         const TITLE = "Tasks & Notes";
         const DELETE_ICON = "&#10060;";
         const BACK_ARROW = "&#129120;";
@@ -298,7 +305,7 @@
             if (actualTitle)
             {
                 const maxLength = 60;
-                if (actualTitle.length > maxLength)
+                if (cut_off_long_texts && actualTitle.length > maxLength)
                 {
                     actualTitle = actualTitle.substring(0, maxLength) + "..."
                 }
@@ -398,7 +405,7 @@
             const newEntryButton = document.createElement('div');
             let entryText = entryName;
             const maxLength = 256
-            if (entryText.length > maxLength){
+            if (cut_off_long_texts && entryText.length > maxLength){
                 entryText = entryText.substring(0, maxLength) + "..."
             }
             newEntryButton.setAttribute('class', 'entryEnterButton');
@@ -451,9 +458,7 @@
 
         function createInputLine() {
             input = document.createElement('input');
-            input.innerText = "+";
             input.onclick = () => {
-
             }
             input.onkeypress = (e) => {
                 if (input.value == "")
@@ -521,6 +526,7 @@
                 deselectEntries();
 
             input.blur();
+            titleObject.blur();
 
             selectedEntryIndex = newIndex;
             entryElements[selectedEntryIndex].select();
@@ -573,10 +579,10 @@
             } else if (e.key == 'Escape') {
                 deselectEntries();
             } else if (e.key == 'Home') {
-                if (entryElements.length > 0 && selectedEntryIndex >= 0) // so button can still be used in input field
+                if (entryElements.length > 0 && (selectedEntryIndex >= 0 || input.value.length == 0)) // so button can still be used in input field
                     selectEntryWithIndex(0);
             } else if (e.key == 'End') {
-                if (entryElements.length > 0 && selectedEntryIndex >= 0) // so button can still be used in input field
+                if (entryElements.length > 0 && (selectedEntryIndex >= 0 || input.value.length == 0)) // so button can still be used in input field
                     selectEntryWithIndex(entryElements.length - 1);
             } else if (e.key == 'Enter') {
                 if (selectedEntryIndex >= 0) {
@@ -589,9 +595,16 @@
                     return false;
                 }
             } else if (e.key == 'F2') {
-                titleObject.focus()
+                deselectEntries();
+                titleObject.focus(); // Does not focus title bar in root screen
+                if (document.activeElement === titleObject) // Therefore this should not be executed then
+                    document.execCommand('selectAll', false, null);
+
             } else {
-                console.log(e.key)
+                if (document.activeElement !== titleObject){
+                    if (!e.shiftKey && !e.altKey && !e.controlKey)
+                        focusInput();
+                }
             }
         }
     </script>
