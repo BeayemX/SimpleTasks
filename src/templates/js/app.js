@@ -6,13 +6,23 @@ const TITLE = "Simple Tasks";
 const DELETE_ICON = "&#10060;";
 const BACK_ARROW = "&#129120;";
 
+// // Focus
+const FOCUS_INPUT_LINE = "input";
+const FOCUS_TITLE = "title";
+const FOCUS_CONTENT = "content";
+
 // Members
 // let history = []
 let historyIndex = 0;
 
 let data = {};
 let _currentPath = [];
-let selectedEntryIndex = -1; // Always set below 0 when not in use, maybe below-zero-setting not necessary any more when using focus-states
+let selectedEntryIndex = -1;
+let previousSelectedEntryIndex = -1;
+
+// // Focus
+let currentFocus = FOCUS_CONTENT;
+
 
 // HTML Elements
 let entryElements; // For selecting entries by index
@@ -105,14 +115,6 @@ function cutSelectedEntry() {
     cutData.path = getCurrentPath();
 }
 
-
-// // // // // //
-// Input Focus //
-// // // // // //
-function isFocused(element) {
-    return document.activeElement === element;
-}
-
 // // // // // // //
 // User Interface //
 // // // // // // //
@@ -127,7 +129,7 @@ function updateDisplayedData() {
     }
 
     deselectEntries();
-    focusInput();
+    // focusInput();
 
     if (selectedIndexAfterUpdate >= 0) {
         selectEntryWithIndex(selectedIndexAfterUpdate);
@@ -260,12 +262,9 @@ function createInputLine() {
         }
 
     }
+    input.onfocus = () => { setFocus(FOCUS_INPUT_LINE);}
+    input.onblur = () => { setFocus(null);}
     inputLine.appendChild(input);
-}
-
-function focusInput() {
-    deselectEntries();
-    input.focus();
 }
 
 function _createEverything(contentData) {
@@ -309,8 +308,15 @@ function createTitle() {
     // Create title text
     titleObject = document.createElement('div');
     titleObject.setAttribute('class', 'title');
-    if (!isAtRootLevel())
+    if (!isAtRootLevel()) {
         titleObject.setAttribute('contenteditable', true);
+        titleObject.onfocus = () => {
+            setFocus(FOCUS_TITLE);
+        };
+        titleObject.onblur = () => {
+            setFocus(null);
+        };
+    }
 
     let actualTitle = getTitle();
     if (actualTitle)
@@ -327,28 +333,16 @@ function createTitle() {
     }
 
     titleObject.innerText = actualTitle;
-
-    const originalText = actualTitle;
+    titleObject.originalText = actualTitle;
 
     titleObject.onblur = () => {
-        if (titleObject.innerText == originalText)
+        if (titleObject.innerText == titleObject.originalText)
             return;
 
         if (!titleObject.innerText) {
-            titleObject.innerText = originalText;
+            titleObject.innerText = titleObject.originalText;
         } else {
-            sendRename(originalText, titleObject.innerText);
-        }
-    }
-    titleObject.onkeydown = (e) => {
-        if (e.key == 'Escape') {
-            titleObject.innerText = originalText;
-            focusInput();
-            return false;
-        }
-        if (e.key == 'Enter') {
-            focusInput(); // this will call the onblur function
-            return false;
+            sendRename(titleObject.originalText, titleObject.innerText);
         }
     }
     titleBar.appendChild(titleObject);
@@ -465,6 +459,7 @@ function deselectEntries() {
     for (let element of entryElements)
         element.deselect();
 
+    previousSelectedEntryIndex = selectedEntryIndex;
     selectedEntryIndex = -1;
 }
 
@@ -481,10 +476,7 @@ function selectEntry(delta) {
 }
 
 function selectEntryWithIndex(newIndex) {
-    if (isFocused(titleObject))
-        return
-
-    if (selectedEntryIndex >= 0)
+    if (newIndex >= 0)
         deselectEntries();
 
     input.blur();
@@ -492,90 +484,111 @@ function selectEntryWithIndex(newIndex) {
 
     selectedEntryIndex = newIndex;
     entryElements[selectedEntryIndex].select();
+    setFocus(FOCUS_CONTENT);
 }
 
 
+// // // // // //
+// Input Focus //
+// // // // // //
+
+function setFocus(focus) {
+    const oldFocus = currentFocus;
+    currentFocus = focus;
+    if (oldFocus == currentFocus)
+        return;
+
+    if (!currentFocus)
+        currentFocus = FOCUS_CONTENT;
+
+    if (oldFocus == FOCUS_CONTENT)
+        deselectEntries();
+    else if (oldFocus == FOCUS_TITLE)
+        titleObject.blur();
+
+    if (currentFocus == FOCUS_INPUT_LINE) {
+        input.focus();
+    } else if (currentFocus == FOCUS_CONTENT) {
+        contentContainer.focus();
+        if (previousSelectedEntryIndex >= 0)
+            selectEntryWithIndex(previousSelectedEntryIndex);
+    } else if (currentFocus == FOCUS_TITLE) {
+        titleObject.focus();
+    }
+}
 
 // // // // // // // //
 // Keyboard Handler  //
 // // // // // // // //
+const keyHandlers = {};
 
-function globalKeyDownHandler(e) {
-    if (e.key == 'Tab') {
-        focusInput();
-        return false;
-    } else if (e.key == 'ArrowLeft') {
-        if (e.altKey) {
-            goBack();
+function inputLineKeyDownHandler(e) {
+    if (e.key == 'ArrowUp') {
+        if (entryElements.length > 0) {
+            selectEntryWithIndex(entryElements.length - 1);
             return false;
-        } else {
-            if (selectedEntryIndex >= 0)
-                moveEntry(-1);
         }
+    } else if (e.key == 'ArrowDown') {
+        if (entryElements.length > 0){
+            selectEntryWithIndex(0);
+            return false;
+        }
+    }
+    return true;
+}
+
+function titleKeyDownHandler(e) {
+    if (e.key == 'Escape') {
+        console.log("original", titleObject.originalText)
+        titleObject.innerText = titleObject.originalText;
+        setFocus(null);
+    } else if (e.key == 'Enter') {
+        setFocus(null);
+    } else {
+        return true;
+    }
+
+    return false;
+}
+function contentKeyDownHandler(e) {
+    if (e.key == 'ArrowLeft') {
+        moveEntry(-1);
     } else if (e.key == 'ArrowRight') {
-        if (e.altKey) {
-            goForward();
-            return false;
-        } else {
-            if (selectedEntryIndex >= 0)
-                moveEntry(1);
-        }
+        moveEntry(1);
     } else if (e.key == 'ArrowUp') {
         if (e.altKey) {
             moveEntry(-1);
-            return false;
         } else if (e.ctrlKey) {
             scrollView(-1);
-            return false;
         } else {
             selectEntry(-1);
-            return false;
         }
     } else if (e.key == 'ArrowDown') {
         if (e.altKey) {
             moveEntry(1);
-            return false;
         } else if (e.ctrlKey) {
             scrollView(1)
-            return false;
         } else {
             selectEntry(1);
-            return false;
         }
-    } else if (e.key == 'Escape') {
-        deselectEntries();
     } else if (e.key == 'Home') {
-        if (entryElements.length > 0 && (selectedEntryIndex >= 0 || input.value.length == 0)) // so button can still be used in input field
+        if (entryElements.length > 0)
             selectEntryWithIndex(0);
     } else if (e.key == 'End') {
-        if (entryElements.length > 0 && (selectedEntryIndex >= 0 || input.value.length == 0)) // so button can still be used in input field
+        if (entryElements.length > 0)
             selectEntryWithIndex(entryElements.length - 1);
     } else if (e.key == 'Enter') {
-        if (selectedEntryIndex >= 0) {
-            entryElements[selectedEntryIndex].enter();
-            return false;
-        }
+        entryElements[selectedEntryIndex].enter();
     } else if (e.key == 'Delete') {
-        if (selectedEntryIndex >= 0) {
-            entryElements[selectedEntryIndex].delete(askForConfirmationForSubtasks = !e.shiftKey);
-            return false;
-        }
+        entryElements[selectedEntryIndex].delete(askForConfirmationForSubtasks = !e.shiftKey);
     } else if (e.key == 'Backspace') {
-        if (!isFocused(input)) {
-            goBack();
-        }
-    } else if (e.key == 'F2') {
-        deselectEntries();
-        titleObject.focus(); // Does not focus title bar in root screen
-        if (isFocused(titleObject)) // Therefore this should not be executed then
-            document.execCommand('selectAll', false, null);
-
+        goBack();
     } else if (e.key == 'c' && e.ctrlKey) {
         if (selectedEntryIndex >= 0)
             copySelectedEntry();
     } else if (e.key == 'v' && e.ctrlKey) {
-        if (selectedEntryIndex >= 0)
-            pasteSelectedEntry();
+        //if (selectedEntryIndex >= 0)
+        pasteSelectedEntry();
     } else if (e.key == 'x' && e.ctrlKey) {
         if (selectedEntryIndex >= 0)
             cutSelectedEntry();
@@ -584,15 +597,49 @@ function globalKeyDownHandler(e) {
     } else if (e.key == 'PageDown') {
         scrollBottom();
     } else {
-        if (!isFocused(titleObject)){
-            if (e.key == 'Shift' || e.key == 'Control' || e.key == 'Alt') {
+        return true;
+    }
 
-            } else {
-                focusInput();
-            }
-            // console.log(e.key)
+    return false;
+}
+
+function globalKeyDownHandler(e) {
+    if (e.key == 'Tab') {
+        if (currentFocus == FOCUS_CONTENT)
+            setFocus(FOCUS_INPUT_LINE)
+        else
+            setFocus(FOCUS_CONTENT)
+        return false;
+    } else if (e.key == 'ArrowLeft') {
+        if (e.altKey) {
+            goBack();
+            return false;
+        }
+    } else if (e.key == 'ArrowRight') {
+        if (e.altKey) {
+            goForward();
+            return false;
+        }
+    } else if (e.key == 'F2') {
+        if (!isAtRootLevel()) {
+            //deselectEntries();
+
+            setFocus(FOCUS_TITLE);
+            document.execCommand('selectAll', false, null);
+        }
+    } else {
+        if (currentFocus) {
+            if(keyHandlers[currentFocus](e) === false)
+                return false;
+        }
+
+        if (!(e.key == 'Shift' || e.key == 'Control' || e.key == 'Alt')){
+            if (currentFocus == FOCUS_CONTENT)
+                setFocus(FOCUS_INPUT_LINE);
         }
     }
+
+    // console.log(e.key)
 }
 
 
