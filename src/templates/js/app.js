@@ -66,13 +66,17 @@ function accessPathData(path)
     return tmpData;
 }
 
-function copyCurrentPath() {
+function copyPath(path) {
     let newPath = []
 
-    for (let part of getCurrentPath())
+    for (let part of path)
         newPath.push(part);
 
     return newPath;
+}
+
+function copyCurrentPath() {
+    return copyPath(getCurrentPath());
 }
 
 
@@ -138,9 +142,17 @@ function updateDisplayedData() {
 }
 
 
-function createEntry(entryName, entryData) {
+function createEntry(entryName, entryData, parentElement, parentPath=[]) {
     const newEntryWrapper = document.createElement('div');
     newEntryWrapper.setAttribute('class', 'entryWrapper');
+
+    const actualTask = document.createElement('div');
+    actualTask.setAttribute('class', 'actualTask');
+    newEntryWrapper.appendChild(actualTask);
+
+    const subTasks = document.createElement('div');
+    subTasks.setAttribute('class', 'subTasks');
+    newEntryWrapper.appendChild(subTasks);
 
     // for copying
     newEntryWrapper.name = entryName;
@@ -157,7 +169,9 @@ function createEntry(entryName, entryData) {
 
     newEntryWrapper.enter = () => {
          // Enter sub-level
-        pushPath(entryName);
+        const tmpParentPath = copyPath(parentPath);
+        tmpParentPath.push(entryName);
+        setPath(tmpParentPath);
 
         /*
         const stateObj = {
@@ -185,7 +199,48 @@ function createEntry(entryName, entryData) {
      }
 
 
-    // Add button to enter sub-level
+    // Add sub-tasks functionality
+    newEntryWrapper.folded = true;
+    newEntryWrapper.subTasks = []
+    newEntryWrapper.unfold = () => {
+        if (newEntryWrapper.folded === false)
+            return;
+
+        newEntryWrapper.folded = false;
+
+        const targetPath = getCurrentPath();
+        targetPath.push(entryName);
+        console.log(targetPath);
+
+        for (let subtaskKey in entryData) {
+            const subTaskParentPath = copyPath(parentPath);
+            subTaskParentPath.push(entryName);
+
+            let newSubTaskElement = createEntry(subtaskKey, entryData[subtaskKey], subTasks, subTaskParentPath);
+            newEntryWrapper.subTasks.push(newSubTaskElement);
+        }
+    }
+    newEntryWrapper.fold = () => {
+        if (newEntryWrapper.folded === true)
+            return;
+
+        newEntryWrapper.folded = true;
+
+        for (let subTaskElement of newEntryWrapper.subTasks) {
+            subTasks.removeChild(subTaskElement);
+            delete subTaskElement;
+        }
+        newEntryWrapper.subTasks = []
+    }
+
+    newEntryWrapper.toggleFold = () => {
+        if (newEntryWrapper.folded)
+            newEntryWrapper.unfold();
+        else
+            newEntryWrapper.fold();
+    }
+
+    // Add main part to show text and enter sub-level
     const newEntryButton = document.createElement('div');
     let entryText = entryName;
     const maxLength = 256
@@ -195,20 +250,13 @@ function createEntry(entryName, entryData) {
     newEntryButton.setAttribute('class', 'entryEnterButton');
     newEntryButton.innerText = entryText;
 
-    newEntryWrapper.appendChild(newEntryButton);
+    actualTask.appendChild(newEntryButton);
 
     newEntryButton.onclick = () => {
         newEntryWrapper.enter();
     };
 
-    // Add description
-    const description = entryData['description'];
-    if (description) {
-        const newEntryDescription = document.createElement('div');
-        newEntryDescription.innerText = description;
-        newEntryWrapper.appendChild(newEntryDescription);
-    }
-
+    // Count subtasks
     let subTasksCounter = 0;
     function countSubTasks(subData) {
         for (let key of Object.keys(subData)) {
@@ -219,25 +267,31 @@ function createEntry(entryName, entryData) {
 
     countSubTasks(entryData);
 
-    if (subTasksCounter > 0){
+    // Add sub tasks counter label
+    if (subTasksCounter > 0) {
         const subTasksCounterLabel = document.createElement('div');
         subTasksCounterLabel.setAttribute('class', 'icon subcounter');
         subTasksCounterLabel.innerText = subTasksCounter;
-        newEntryWrapper.appendChild(subTasksCounterLabel);
+        actualTask.appendChild(subTasksCounterLabel);
+
+        subTasksCounterLabel.onclick = () => {
+            newEntryWrapper.toggleFold();
+        }
+
     }
 
     // Add delete button
     const deleteButton = document.createElement('div');
     deleteButton.setAttribute('class', 'icon deletebutton');
     deleteButton.innerHTML = DELETE_ICON;
-    newEntryWrapper.appendChild(deleteButton);
+    // actualTask.appendChild(deleteButton);
 
     deleteButton.onclick = () => {
         newEntryWrapper.delete();
     };
 
-    contentContainer.appendChild(newEntryWrapper);
-    entryElements.push(newEntryWrapper);
+    parentElement.appendChild(newEntryWrapper);
+    return newEntryWrapper;
 }
 
 function createInputLine() {
@@ -276,7 +330,9 @@ function _createEverything(contentData) {
     entryElements = [];
     for (let key in entries) {
         const entry = entries[key];
-        createEntry(key, entry);
+
+        let newEntryElement = createEntry(key, entry, contentContainer);
+        entryElements.push(newEntryElement);
     }
 }
 
@@ -429,15 +485,6 @@ function setPath(path) {
     updateDisplayedData();
 }
 
-function pushPath(path) {
-    _currentPath = getCurrentPath(); // remove forward-history
-    _currentPath.push(path);
-
-    historyIndex = _currentPath.length;
-
-    updateDisplayedData();
-}
-
 function changeHistory(delta) {
     const originalHistoryIndex = historyIndex;
     historyIndex = clamp(0, _currentPath.length, historyIndex + delta);
@@ -552,9 +599,11 @@ function titleKeyDownHandler(e) {
 }
 function contentKeyDownHandler(e) {
     if (e.key == 'ArrowLeft') {
-        moveEntry(-1);
+        entryElements[selectedEntryIndex].fold();
     } else if (e.key == 'ArrowRight') {
-        moveEntry(1);
+        entryElements[selectedEntryIndex].unfold();
+    } else if (e.key == ' ') {
+        entryElements[selectedEntryIndex].toggleFold();
     } else if (e.key == 'ArrowUp') {
         if (e.altKey) {
             moveEntry(-1);
@@ -610,16 +659,12 @@ function globalKeyDownHandler(e) {
         else
             setFocus(FOCUS_CONTENT)
         return false;
-    } else if (e.key == 'ArrowLeft') {
-        if (e.altKey) {
-            goBack();
-            return false;
-        }
-    } else if (e.key == 'ArrowRight') {
-        if (e.altKey) {
-            goForward();
-            return false;
-        }
+    } else if (e.key == 'ArrowLeft' && e.altKey) {
+        goBack();
+        return false;
+    } else if (e.key == 'ArrowRight' && e.altKey) {
+        goForward();
+        return false;
     } else if (e.key == 'F2') {
         if (!isAtRootLevel()) {
             //deselectEntries();

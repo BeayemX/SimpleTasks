@@ -1,6 +1,6 @@
 body {
     background-color: rgb(77, 77, 77);
-    background-color: #5a5a5a;
+    background-color: #424242;
     margin: 0;
     padding: 0;
     color: #ddd;
@@ -79,10 +79,11 @@ body {
 
 .entryWrapper {
     display: flex;
-    flex-flow: row;
+    flex-flow: column;
     flex: 1;
 
-    background-color: #0006;
+    background-color: #0004;
+    border: 1px solid #555;
     border-radius: 3px;
 
     padding-left: 15px;
@@ -97,8 +98,19 @@ body {
 
     font-family: 'Roboto', sans-serif;
     font-size: 14pt;
+}
+.actualTask{
+    flex: 1;
 
+    display: flex;
+    flex-flow: row;
     align-items: center;
+
+}
+.subTasks{
+    flex: 1;
+    display: flex;
+    flex-flow: column;
 }
 
 .focused{
@@ -140,7 +152,8 @@ body {
     padding-right: 15px;
     padding-top: 5px;
     padding-bottom: 5px;
-    cursor: default;
+    cursor: pointer;
+
     /*
     should allow click through...
     pointer-events: none;
@@ -155,3 +168,18 @@ body {
     background-color: transparent;
     flex-wrap: wrap;
 }
+/*
+.showSubTasksButton {
+    flex: 0;
+
+    background-color: #666;
+    border-radius: 13px;
+
+    margin-right: 15px;
+    padding-left: 10px;
+    padding-right: 10px;
+
+    cursor: pointer;
+    font-size: 150%;
+}
+*/
