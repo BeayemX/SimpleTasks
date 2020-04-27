@@ -142,7 +142,7 @@ function updateDisplayedData() {
 }
 
 
-function createEntry(entryName, entryData, parentElement, parentPath=[]) {
+function createEntry(entryName, entryData, parentElement, parentPath) {
     const newEntryWrapper = document.createElement('div');
     newEntryWrapper.setAttribute('class', 'entryWrapper');
 
@@ -331,7 +331,7 @@ function _createEverything(contentData) {
     for (let key in entries) {
         const entry = entries[key];
 
-        let newEntryElement = createEntry(key, entry, contentContainer);
+        let newEntryElement = createEntry(key, entry, contentContainer, getCurrentPath());
         entryElements.push(newEntryElement);
     }
 }
