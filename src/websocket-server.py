@@ -260,8 +260,5 @@ def get_overwrite_safe_name(target_name, data):
 # Start server loop
 print("Starting server on port " + str(PORT))
 asyncio.get_event_loop().run_until_complete(websockets.serve(handle_messages, ADDRESS, PORT))
-
-path = os.getcwd()
-print(f"Server running on {path}/Frontend/index.html")
 asyncio.get_event_loop().run_forever()
 
