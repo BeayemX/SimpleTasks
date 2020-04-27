@@ -284,7 +284,7 @@ function createEntry(entryName, entryData, parentElement, parentPath=[]) {
     const deleteButton = document.createElement('div');
     deleteButton.setAttribute('class', 'icon deletebutton');
     deleteButton.innerHTML = DELETE_ICON;
-    // actualTask.appendChild(deleteButton);
+    actualTask.appendChild(deleteButton);
 
     deleteButton.onclick = () => {
         newEntryWrapper.delete();
