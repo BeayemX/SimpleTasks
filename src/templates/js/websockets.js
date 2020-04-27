@@ -4,21 +4,6 @@ const URL = 'ws://' + document.domain + ':8193';
 const RECONNECT_TIMEOUT = 2500;
 let ws;
 
-function onLoad() {
-    // console.clear();
-
-    var contentContainer = document.getElementById('contentContainer');
-    var inputLine = document.getElementById('inputLine');
-    var titleBar = document.getElementById('titleBar');
-    var body = document.body;
-
-    createInputLine()
-
-    connectToWebSocket();
-
-    document.onkeydown = globalKeyDownHandler;
-}
-
 function connectToWebSocket() {
     ws = new WebSocket(URL);
     // Connect to websockets

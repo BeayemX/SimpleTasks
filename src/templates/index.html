@@ -15,6 +15,25 @@
     <script>
         // Store variables from Flask
         var clientID = '{{clientId}}';
+
+        function onLoad() {
+            // console.clear();
+
+            var contentContainer = document.getElementById('contentContainer');
+            var inputLine = document.getElementById('inputLine');
+            var titleBar = document.getElementById('titleBar');
+            var body = document.body;
+
+            createInputLine()
+
+            connectToWebSocket();
+
+            document.onkeydown = globalKeyDownHandler;
+
+            keyHandlers[FOCUS_INPUT_LINE] = inputLineKeyDownHandler;
+            keyHandlers[FOCUS_TITLE] = titleKeyDownHandler;
+            keyHandlers[FOCUS_CONTENT] = contentKeyDownHandler;
+        }
     </script>
 </head>
 
