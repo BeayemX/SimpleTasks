@@ -51,10 +51,10 @@ function getCurrentData() {
     return accessPathData(getCurrentPath())
 }
 
-function getParentData() {
-    const parentPath = copyCurrentPath()
+function getParentPath() {
+    const parentPath = copyCurrentPath();
     parentPath.pop();
-    return accessPathData(parentPath);
+    return parentPath;
 }
 
 function accessPathData(path)
@@ -189,19 +189,10 @@ function createEntry(entryName, entryData, parentElement, parentContainer, paren
      }
 
      newEntryWrapper.delete = (askForConfirmationForSubtasks = true) => {
-        if (subTasksCounter > 0 && askForConfirmationForSubtasks) {
-            if (!confirm("There are sub-tasks, do you really want to delete this?"))
-                return;
-        }
-
+        const askConfirmation = subTasksCounter > 0 && askForConfirmationForSubtasks;
         const deletePath = copyPath(parentPath);
         deletePath.push(entryName);
-        updateDisplayedData();
-
-        send({
-            'action': 'delete_entry',
-            'path': deletePath
-        })
+        sendDelete(deletePath, askConfirmation);
      }
 
 
@@ -303,6 +294,7 @@ function createEntry(entryName, entryData, parentElement, parentContainer, paren
     }
 
     // Add delete button
+    /*
     const deleteButton = document.createElement('div');
     deleteButton.setAttribute('class', 'icon deletebutton');
     deleteButton.innerHTML = DELETE_ICON;
@@ -311,6 +303,7 @@ function createEntry(entryName, entryData, parentElement, parentContainer, paren
     deleteButton.onclick = () => {
         newEntryWrapper.delete();
     };
+    */
 
     parentContainer.appendChild(newEntryWrapper);
     return newEntryWrapper;
@@ -424,6 +417,23 @@ function createTitle() {
         }
     }
     titleBar.appendChild(titleObject);
+
+    // Add delete button
+    if (!isAtRootLevel()) {
+        // Create back button
+        const backButton = document.createElement('div');
+        backButton.setAttribute('class', 'deletebutton');
+        backButton.innerHTML = "X";
+
+        backButton.onclick = () => {
+            const deleteExecuted = sendDelete(getCurrentPath(), entryElements.length > 0);
+            if (deleteExecuted)
+                setPath(getParentPath());
+        }
+
+        titleBar.appendChild(backButton);
+    }
+
 }
 
 
@@ -494,6 +504,20 @@ function sendPaste() {
         'cut_data': cutData
     }
     send(sendData);
+}
+
+function sendDelete(deletePath, askConfirmation) {
+    if (askConfirmation) {
+        if (!confirm("There are sub-tasks, do you really want to delete this?"))
+            return false;
+    }
+
+    send({
+        'action': 'delete_entry',
+        'path': deletePath
+    })
+
+    return true;
 }
 
 

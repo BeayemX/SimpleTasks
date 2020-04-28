@@ -145,8 +145,10 @@ body {
     margin-right:5;
 }
 .deletebutton {
+    width: 25px;
     font-size: 140%;
     color:red;
+    text-align: center;
 
     border: 2px solid red;
     border-radius: 100%;
