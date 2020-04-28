@@ -193,9 +193,8 @@ function createEntry(entryName, entryData, parentElement, parentContainer, paren
             if (!confirm("There are sub-tasks, do you really want to delete this?"))
                 return;
         }
-        delete getCurrentData()[entryName];
 
-        let deletePath = copyCurrentPath();
+        const deletePath = copyPath(parentPath);
         deletePath.push(entryName);
         updateDisplayedData();
 
