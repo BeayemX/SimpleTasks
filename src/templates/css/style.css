@@ -1,9 +1,11 @@
 body {
     background-color: rgb(77, 77, 77);
     background-color: #424242;
+    background-color: #555;
     margin: 0;
     padding: 0;
-    color: #ddd;
+    color: #fafafa;
+    font-family: 'Roboto', sans-serif;
 }
 #wrapper {
     margin: 0;
@@ -17,6 +19,9 @@ body {
     display: flex;
     flex-flow: column;
     overflow: auto;
+    /*
+    padding-right: 5px;
+    */
 }
 ::-webkit-scrollbar {
     display: none;
@@ -44,13 +49,13 @@ body {
     flex-flow: row;
     flex: 0;
 
-    font-family: 'Oswald', sans-serif;
 
     background-color: #2a2a2a;
     padding: 10px;
 
     align-items: center;
     /*
+    font-family: 'Oswald', sans-serif;
     justify-content: center;
     */
 }
@@ -74,7 +79,7 @@ body {
     margin: 5px;
     cursor: text;
     text-align: center;
-    font-size: 18pt;
+    font-size: 16pt;
 }
 
 .entryWrapper {
@@ -82,24 +87,27 @@ body {
     flex-flow: column;
     flex: 1;
 
-    background-color: #0004;
-    border: 1px solid #555;
+    background-color: #0000001c;
+    border: 1px solid #000;
     border-radius: 3px;
 
-    padding-left: 15px;
-    padding-right: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
     padding-top: 7px;
     padding-bottom: 7px;
 
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 6px;
-    margin-bottom: 6px;
-
+    margin: 5px;
     font-family: 'Roboto', sans-serif;
-    font-size: 14pt;
 }
+.entryWrapper .entryWrapper {
+    margin-right: -5px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: 0px;
+}
+
 .actualTask{
+    margin-left: 5px;
     flex: 1;
 
     display: flex;
@@ -108,6 +116,7 @@ body {
 
 }
 .subTasks{
+    margin-right: 0px;
     flex: 1;
     display: flex;
     flex-flow: column;
@@ -168,18 +177,3 @@ body {
     background-color: transparent;
     flex-wrap: wrap;
 }
-/*
-.showSubTasksButton {
-    flex: 0;
-
-    background-color: #666;
-    border-radius: 13px;
-
-    margin-right: 15px;
-    padding-left: 10px;
-    padding-right: 10px;
-
-    cursor: pointer;
-    font-size: 150%;
-}
-*/
