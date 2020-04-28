@@ -79,6 +79,13 @@ function copyCurrentPath() {
     return copyPath(getCurrentPath());
 }
 
+function reassignIndices() {
+    let indexCounter = 0;
+    for (let element of entryElements) {
+        element.index = indexCounter;
+        indexCounter += 1;
+    }
+}
 
 // // // // // // //
 // Rearrange data //
@@ -142,7 +149,7 @@ function updateDisplayedData() {
 }
 
 
-function createEntry(entryName, entryData, parentElement, parentPath) {
+function createEntry(entryName, entryData, parentElement, parentContainer, parentPath) {
     const newEntryWrapper = document.createElement('div');
     newEntryWrapper.setAttribute('class', 'entryWrapper');
 
@@ -203,34 +210,50 @@ function createEntry(entryName, entryData, parentElement, parentPath) {
     newEntryWrapper.folded = true;
     newEntryWrapper.subTasks = []
     newEntryWrapper.unfold = () => {
-        if (newEntryWrapper.folded === false)
+        if (newEntryWrapper.folded === false) { // Already unfolded
+            if (newEntryWrapper.subTasks.length > 0)
+                selectEntry(1);
             return;
+        }
 
         newEntryWrapper.folded = false;
 
         const targetPath = getCurrentPath();
         targetPath.push(entryName);
-        console.log(targetPath);
 
+        let insertIndex = selectedEntryIndex + 1;
         for (let subtaskKey in entryData) {
             const subTaskParentPath = copyPath(parentPath);
             subTaskParentPath.push(entryName);
 
-            let newSubTaskElement = createEntry(subtaskKey, entryData[subtaskKey], subTasks, subTaskParentPath);
+            let newSubTaskElement = createEntry(subtaskKey, entryData[subtaskKey], newEntryWrapper, subTasks, subTaskParentPath);
             newEntryWrapper.subTasks.push(newSubTaskElement);
+            entryElements.splice(insertIndex, 0, newSubTaskElement);
+            newSubTaskElement.index = insertIndex;
+            insertIndex += 1;
         }
+        reassignIndices();
     }
+
     newEntryWrapper.fold = () => {
-        if (newEntryWrapper.folded === true)
+        if (newEntryWrapper.folded === true || newEntryWrapper.subTasks.length == 0) {
+            if (parentElement)
+                selectEntryWithIndex(parentElement.index)
             return;
+        }
 
         newEntryWrapper.folded = true;
 
         for (let subTaskElement of newEntryWrapper.subTasks) {
+            subTaskElement.fold();
             subTasks.removeChild(subTaskElement);
             delete subTaskElement;
+
+            const deleteIndex = entryElements.indexOf(subTaskElement);
+            entryElements.splice(deleteIndex, 1);
         }
         newEntryWrapper.subTasks = []
+        reassignIndices();
     }
 
     newEntryWrapper.toggleFold = () => {
@@ -290,7 +313,7 @@ function createEntry(entryName, entryData, parentElement, parentPath) {
         newEntryWrapper.delete();
     };
 
-    parentElement.appendChild(newEntryWrapper);
+    parentContainer.appendChild(newEntryWrapper);
     return newEntryWrapper;
 }
 
@@ -331,7 +354,7 @@ function _createEverything(contentData) {
     for (let key in entries) {
         const entry = entries[key];
 
-        let newEntryElement = createEntry(key, entry, contentContainer, getCurrentPath());
+        let newEntryElement = createEntry(key, entry, null, contentContainer, getCurrentPath());
         entryElements.push(newEntryElement);
     }
 }
@@ -586,7 +609,6 @@ function inputLineKeyDownHandler(e) {
 
 function titleKeyDownHandler(e) {
     if (e.key == 'Escape') {
-        console.log("original", titleObject.originalText)
         titleObject.innerText = titleObject.originalText;
         setFocus(null);
     } else if (e.key == 'Enter') {
