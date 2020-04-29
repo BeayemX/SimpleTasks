@@ -48,8 +48,8 @@ body {
     flex: 0;
     background-color: #333;
     padding: 10px;
-
     align-items: center;
+
     /*
     font-family: 'Oswald', sans-serif;
     justify-content: center;
@@ -73,8 +73,10 @@ body {
     padding-top: 5px;
     padding-bottom: 5px;
     margin: 5px;
+
     cursor: text;
-    text-align: center;
+
+    text-align: left;
     font-size: 16pt;
 }
 
