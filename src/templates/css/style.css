@@ -1,7 +1,5 @@
 body {
-    background-color: rgb(77, 77, 77);
-    background-color: #424242;
-    background-color: #555;
+    background-color: #666;
     margin: 0;
     padding: 0;
     color: #fafafa;
@@ -34,7 +32,7 @@ body {
     flex-flow: column;
 
     padding: 10px;
-    background-color: #2a2a2a;
+    background-color: #333;
 }
 #inputLine input {
     padding: 5px;
@@ -48,9 +46,7 @@ body {
     display: flex;
     flex-flow: row;
     flex: 0;
-
-
-    background-color: #2a2a2a;
+    background-color: #333;
     padding: 10px;
 
     align-items: center;
@@ -87,7 +83,7 @@ body {
     flex-flow: column;
     flex: 1;
 
-    background-color: #0000001c;
+    background-color: #555;
     border: 1px solid #000;
     border-radius: 3px;
 
@@ -100,6 +96,7 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 .entryWrapper .entryWrapper {
+    background-color: #0000001c;
     margin-right: -5px;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
