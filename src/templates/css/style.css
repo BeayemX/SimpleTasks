@@ -121,12 +121,13 @@ body {
     flex-flow: column;
 }
 
-.focused{
+.entryWrapper.focused {
     /*
     border: 1px solid cyan;
     box-sizing: border-box; // this does not work, it should prevent the content size from resizing when showing border
-    */
     border-left: 5px solid cyan;
+    */
+    background-color: #090a;
 }
 
 .entryEnterButton {
