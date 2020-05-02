@@ -72,7 +72,9 @@ class Entry {
     };
 
     showActionBar = () => {
-        this.actionBar.style.display = "flex";
+        if (isMobileAgent){
+            this.actionBar.style.display = "flex";
+        }
     }
 
     hideActionBar = () => {

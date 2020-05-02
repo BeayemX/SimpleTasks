@@ -36,7 +36,14 @@ let pathToEnterWhenReceivingServerUpdate = null;
 let selectedIndexAfterUpdate = -1; // TODO move to entry class?
 
 
+let isMobileAgent = false;
+
 function init() {
+    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+        isMobileAgent = true;
+        console.log("Using mobile client: ", navigator.userAgent)
+    }
+
     window.onpopstate = function(event) {
         restorePath(event.state.path);
     }
