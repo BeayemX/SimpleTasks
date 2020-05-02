@@ -5,7 +5,8 @@ const startFolded = true;
 // Constants
 const TITLE = "Simple Tasks";
 const DELETE_ICON = "&#10060;";
-const BACK_ARROW = "&#129120;";
+// const BACK_ARROW = "&#129120;";
+const BACK_ARROW = "../";
 
 // // Focus
 const FOCUS_INPUT_LINE = "input";
@@ -34,6 +35,14 @@ let input;
 let pathToEnterWhenReceivingServerUpdate = null;
 let selectedIndexAfterUpdate = -1; // TODO move to entry class?
 
+
+function init() {
+    window.onpopstate = function(event) {
+        restorePath(event.state.path);
+    }
+
+    setPath(_currentPath);
+}
 
 // // // // // //
 // Data Access //
@@ -207,6 +216,7 @@ function isAtRootLevel() {
 function createTitle() {
     titleBar.innerHTML = '';
 
+    //*
     if (!isAtRootLevel()) {
         // Create back button
         const backButton = document.createElement('div');
@@ -214,11 +224,12 @@ function createTitle() {
         backButton.innerHTML = BACK_ARROW;
 
         backButton.onclick = () => {
-            goBack();
+            // goBack();
+            goUp();
         }
 
         titleBar.appendChild(backButton);
-    }
+    }//*/
 
     // Create title text
     titleObject = document.createElement('div');
@@ -354,11 +365,18 @@ function sendDelete(deletePath, askConfirmation) {
 // // // // // // // // // //
 // Path and History Stuff  //
 // // // // // // // // // //
-
-function setPath(path) {
+function restorePath(path) {
     _currentPath = path;
     historyIndex = _currentPath.length;
     updateDisplayedData();
+}
+
+function setPath(path) {
+    restorePath(path);
+
+    window.history.pushState({
+        "path": _currentPath
+    }, _currentPath.join("/"), "")
 }
 
 function changeHistory(delta) {
@@ -370,14 +388,19 @@ function changeHistory(delta) {
     }
 }
 
-function goBack() {
+function goUp() {
     changeHistory(-1);
+}
+/*
+function goBack() {
+    //changeHistory(-1);
+    window.history.back();
 }
 
 function goForward() {
-    changeHistory(1);
+    window.history.forward();
 }
-
+*/
 
 // // // // // //
 // Input Focus //
@@ -441,11 +464,11 @@ function titleKeyDownHandler(e) {
     return false;
 }
 function contentKeyDownHandler(e) {
-    if (e.key == 'ArrowLeft') {
+    if (e.key == 'ArrowLeft' && e.altKey == false) {
         // currentlySelectedElement.fold();
         // currentlySelectedElement.stepOut();
         currentlySelectedElement.stepOut();
-    } else if (e.key == 'ArrowRight') {
+    } else if (e.key == 'ArrowRight' && e.altKey == false) {
         //currentlySelectedElement.unfold();
         currentlySelectedElement.stepInto();
     } else if (e.key == ' ') {
@@ -506,12 +529,6 @@ function globalKeyDownHandler(e) {
         else
             setFocus(FOCUS_CONTENT)
         return false;
-    } else if (e.key == 'ArrowLeft' && e.altKey) {
-        goBack();
-        return false;
-    } else if (e.key == 'ArrowRight' && e.altKey) {
-        goForward();
-        return false;
     } else if (e.key == 'F2') {
         if (!isAtRootLevel()) {
             //deselectEntries();
@@ -529,10 +546,10 @@ function globalKeyDownHandler(e) {
             if(keyHandlers[currentFocus](e) === false)
                 return false;
         }
-
         if (!(e.key == 'Shift' || e.key == 'Control' || e.key == 'Alt')){
-            if (currentFocus == FOCUS_CONTENT)
+            if (currentFocus == FOCUS_CONTENT) {
                 setFocus(FOCUS_INPUT_LINE);
+            }
         }
     }
 
