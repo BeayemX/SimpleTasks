@@ -1,5 +1,6 @@
 // Configuration
 const cutOffLongTexts = false; // This leads to errors when trying to find elements by key (entryName) on the server side
+const startFolded = true;
 
 // Constants
 const TITLE = "Simple Tasks";
@@ -13,19 +14,17 @@ const FOCUS_CONTENT = "content";
 
 // Members
 // let history = []
+let _currentPath = [];
 let historyIndex = 0;
 
 let data = {};
-let _currentPath = [];
-let selectedEntryIndex = -1;
-let previousSelectedEntryIndex = -1;
+let selectedEntryIndex = 0; // TODO remove all occurences
+let previousSelectedEntryIndex = -1; // TODO move into entry class?
 
 // // Focus
 let currentFocus = FOCUS_CONTENT;
+let currentlySelectedElement = null;
 
-
-// HTML Elements
-let entryElements; // For selecting entries by index
 
 // // Editable
 let titleObject;
@@ -33,17 +32,29 @@ let input;
 
 // Do after network-update
 let pathToEnterWhenReceivingServerUpdate = null;
-let selectedIndexAfterUpdate = -1;
-
+let selectedIndexAfterUpdate = -1; // TODO move to entry class?
 
 
 // // // // // //
 // Data Access //
 // // // // // //
 
+function setDataComingFromServer(newData) {
+    data = newData;
+}
+
 function getCurrentPath() {
     let path = [];
-    path = path.concat(_currentPath.slice(0, historyIndex));
+    let sliceStart = 0;
+    path = path.concat(_currentPath.slice(sliceStart, historyIndex));
+
+    path = []
+    for (let part of _currentPath.slice(sliceStart, historyIndex))
+    {
+        if (part) // HACK necessary for root element, because it has no parent and it causes the first value of the _currentPath to be 'undefined'
+            path.push(part)
+    }
+
     return path;
 }
 
@@ -69,8 +80,10 @@ function accessPathData(path)
 function copyPath(path) {
     let newPath = []
 
-    for (let part of path)
-        newPath.push(part);
+    for (let part of path) {
+        if (part) // HACK necessary for root element, because it has no parent and it causes the first value of the _currentPath to be 'undefined'
+            newPath.push(part);
+    }
 
     return newPath;
 }
@@ -79,14 +92,22 @@ function copyCurrentPath() {
     return copyPath(getCurrentPath());
 }
 
-function reassignIndices() {
-    let indexCounter = 0;
-    for (let element of entryElements) {
-        element.index = indexCounter;
-        indexCounter += 1;
-    }
-}
+function getElementByPath(path) {
+    console.log("getElementByPath")
+    let currentElement = currentSceneRoot;
+    let currentPath = getCurrentPath(); // currentElement.getElementPath();
 
+    while (currentPath.length > 0) {
+        if (path[path.length - 1] == currentPath[currentPath.length -1]) {
+            path.pop();
+            currentPath.pop();
+        } else {
+            break;
+        }
+    }
+
+    // for (let part of currentPath)
+}
 // // // // // // //
 // Rearrange data //
 // // // // // // //
@@ -104,15 +125,16 @@ let cutData = {
 };
 
 function copySelectedEntry() {
-    copyData.name = entryElements[selectedEntryIndex].name;
-    copyData.data = entryElements[selectedEntryIndex].data;
+    copyData.name = currentlySelectedElement.name;
+    copyData.data = currentlySelectedElement.data;
 
     cutData.execute_cut = false;
     cutData.path = "";
 }
 
-function pasteSelectedEntry() {
-    sendPaste();
+function pasteEntry(pasteIntoSelectedEntry) {
+    console.log("pasteEntry", pasteIntoSelectedEntry)
+    sendPaste(pasteIntoSelectedEntry);
 
     if (cutData.execute_cut)  {
         copyData.name = "";
@@ -139,174 +161,10 @@ function updateDisplayedData() {
         setPath(tmpPath);
     }
 
-    deselectEntries();
-    // focusInput();
-
     if (selectedIndexAfterUpdate >= 0) {
-        selectEntryWithIndex(selectedIndexAfterUpdate);
+        currentlySelectedElement.selectEntryWithIndex(selectedIndexAfterUpdate);
         selectedIndexAfterUpdate = -1;
     }
-}
-
-
-function createEntry(entryName, entryData, parentElement, parentContainer, parentPath) {
-    const newEntryWrapper = document.createElement('div');
-    newEntryWrapper.setAttribute('class', 'entryWrapper');
-
-    const actualTask = document.createElement('div');
-    actualTask.setAttribute('class', 'actualTask');
-    newEntryWrapper.appendChild(actualTask);
-
-    const subTasks = document.createElement('div');
-    subTasks.setAttribute('class', 'subTasks');
-    newEntryWrapper.appendChild(subTasks);
-
-    // for copying
-    newEntryWrapper.name = entryName;
-    newEntryWrapper.data = entryData;
-    // copy end
-
-    newEntryWrapper.select = () => {
-        newEntryWrapper.classList.add('focused');
-        newEntryWrapper.scrollIntoView(false);
-    };
-    newEntryWrapper.deselect = () => {
-        newEntryWrapper.classList.remove('focused');
-    };
-
-    newEntryWrapper.enter = () => {
-         // Enter sub-level
-        const tmpParentPath = copyPath(parentPath);
-        tmpParentPath.push(entryName);
-        setPath(tmpParentPath);
-
-        /*
-        const stateObj = {
-            "currentPath": currentPath;
-        }
-        history.pushState(stateObj, )
-        */
-     }
-
-     newEntryWrapper.delete = (askForConfirmationForSubtasks = true) => {
-        const askConfirmation = subTasksCounter > 0 && askForConfirmationForSubtasks;
-        const deletePath = copyPath(parentPath);
-        deletePath.push(entryName);
-        sendDelete(deletePath, askConfirmation);
-     }
-
-
-    // Add sub-tasks functionality
-    newEntryWrapper.folded = true;
-    newEntryWrapper.subTasks = []
-    newEntryWrapper.unfold = () => {
-        if (newEntryWrapper.folded === false) { // Already unfolded
-            if (newEntryWrapper.subTasks.length > 0)
-                selectEntry(1);
-            return;
-        }
-
-        newEntryWrapper.folded = false;
-
-        const targetPath = getCurrentPath();
-        targetPath.push(entryName);
-
-        let insertIndex = selectedEntryIndex + 1;
-        for (let subtaskKey in entryData) {
-            const subTaskParentPath = copyPath(parentPath);
-            subTaskParentPath.push(entryName);
-
-            let newSubTaskElement = createEntry(subtaskKey, entryData[subtaskKey], newEntryWrapper, subTasks, subTaskParentPath);
-            newEntryWrapper.subTasks.push(newSubTaskElement);
-            entryElements.splice(insertIndex, 0, newSubTaskElement);
-            newSubTaskElement.index = insertIndex;
-            insertIndex += 1;
-        }
-        reassignIndices();
-    }
-
-    newEntryWrapper.fold = () => {
-        if (newEntryWrapper.folded === true || newEntryWrapper.subTasks.length == 0) {
-            if (parentElement)
-                selectEntryWithIndex(parentElement.index)
-            return;
-        }
-
-        newEntryWrapper.folded = true;
-
-        for (let subTaskElement of newEntryWrapper.subTasks) {
-            subTaskElement.fold();
-            subTasks.removeChild(subTaskElement);
-            delete subTaskElement;
-
-            const deleteIndex = entryElements.indexOf(subTaskElement);
-            entryElements.splice(deleteIndex, 1);
-        }
-        newEntryWrapper.subTasks = []
-        reassignIndices();
-    }
-
-    newEntryWrapper.toggleFold = () => {
-        if (newEntryWrapper.folded)
-            newEntryWrapper.unfold();
-        else
-            newEntryWrapper.fold();
-    }
-
-    // Add main part to show text and enter sub-level
-    const newEntryButton = document.createElement('div');
-    let entryText = entryName;
-    const maxLength = 256
-    if (cutOffLongTexts && entryText.length > maxLength){
-        entryText = entryText.substring(0, maxLength) + "..."
-    }
-    newEntryButton.setAttribute('class', 'entryEnterButton');
-    newEntryButton.innerText = entryText;
-
-    actualTask.appendChild(newEntryButton);
-
-    newEntryButton.onclick = () => {
-        newEntryWrapper.enter();
-    };
-
-    // Count subtasks
-    let subTasksCounter = 0;
-    function countSubTasks(subData) {
-        for (let key of Object.keys(subData)) {
-            subTasksCounter += 1;
-            countSubTasks(subData[key]);
-        }
-    }
-
-    countSubTasks(entryData);
-
-    // Add sub tasks counter label
-    if (subTasksCounter > 0) {
-        const subTasksCounterLabel = document.createElement('div');
-        subTasksCounterLabel.setAttribute('class', 'icon subcounter');
-        subTasksCounterLabel.innerText = subTasksCounter;
-        actualTask.appendChild(subTasksCounterLabel);
-
-        subTasksCounterLabel.onclick = () => {
-            newEntryWrapper.toggleFold();
-        }
-
-    }
-
-    // Add delete button
-    /*
-    const deleteButton = document.createElement('div');
-    deleteButton.setAttribute('class', 'icon deletebutton');
-    deleteButton.innerHTML = DELETE_ICON;
-    actualTask.appendChild(deleteButton);
-
-    deleteButton.onclick = () => {
-        newEntryWrapper.delete();
-    };
-    */
-
-    parentContainer.appendChild(newEntryWrapper);
-    return newEntryWrapper;
 }
 
 function createInputLine() {
@@ -336,24 +194,10 @@ function createInputLine() {
     inputLine.appendChild(input);
 }
 
-function _createEverything(contentData) {
-    contentContainer.innerText = "";
-
-    createTitle();
-
-    const entries = contentData;
-    entryElements = [];
-    for (let key in entries) {
-        const entry = entries[key];
-
-        let newEntryElement = createEntry(key, entry, null, contentContainer, getCurrentPath());
-        entryElements.push(newEntryElement);
-    }
-}
-
 function getTitle() {
-    const currPath = getCurrentPath();
-    return currPath[currPath.length -1];
+    let currPath = getCurrentPath();
+    let actualTitle = currPath[currPath.length -1];
+    return actualTitle
 }
 
 function isAtRootLevel() {
@@ -426,7 +270,7 @@ function createTitle() {
         backButton.innerHTML = "X";
 
         backButton.onclick = () => {
-            const deleteExecuted = sendDelete(getCurrentPath(), entryElements.length > 0);
+            const deleteExecuted = sendDelete(getCurrentPath(), currentSceneRoot.subTasks.length > 0);
             if (deleteExecuted)
                 setPath(getParentPath());
         }
@@ -460,24 +304,6 @@ function scrollView(delta) {
     send(sendData);
 }
 
-function moveEntry(delta) {
-    if (entryElements.length == 0)
-        return;
-
-    let newPosition = selectedEntryIndex + delta;
-    newPosition = clamp(0, entryElements.length - 1, newPosition);
-
-    if (newPosition != selectedEntryIndex) {
-        send({
-            "action": 'move_entry',
-            "path": getCurrentPath(),
-            "currentIndex": selectedEntryIndex,
-            "newIndex": newPosition
-        })
-    }
-    selectedIndexAfterUpdate = newPosition;
-}
-
 function sendRename(oldName, newName) {
     const path = copyCurrentPath();
     path.pop();
@@ -493,13 +319,17 @@ function sendRename(oldName, newName) {
     pathToEnterWhenReceivingServerUpdate.push(newName)
 }
 
-function sendPaste() {
+function sendPaste(pasteIntoSelectedEntry) {
     if (!copyData['data'])
         return
+    let pastePath = currentlySelectedElement.getElementPath(); // Paste into selected object
+    if (!pasteIntoSelectedEntry) {
+        pastePath.pop(); // Paste next to selected object
+    }
 
     const sendData = {
         'action': 'paste_data',
-        'path': getCurrentPath(),
+        'path': pastePath,
         'data': copyData,
         'cut_data': cutData
     }
@@ -548,38 +378,6 @@ function goForward() {
     changeHistory(1);
 }
 
-function deselectEntries() {
-    for (let element of entryElements)
-        element.deselect();
-
-    previousSelectedEntryIndex = selectedEntryIndex;
-    selectedEntryIndex = -1;
-}
-
-function selectEntry(delta) {
-    if (entryElements.length == 0)
-        return;
-
-    let newIndex = selectedEntryIndex;
-    newIndex += delta;
-    newIndex = clamp(0, entryElements.length - 1, newIndex);
-
-    deselectEntries();
-    selectEntryWithIndex(newIndex);
-}
-
-function selectEntryWithIndex(newIndex) {
-    if (newIndex >= 0)
-        deselectEntries();
-
-    input.blur();
-    titleObject.blur();
-
-    selectedEntryIndex = newIndex;
-    entryElements[selectedEntryIndex].select();
-    setFocus(FOCUS_CONTENT);
-}
-
 
 // // // // // //
 // Input Focus //
@@ -595,7 +393,7 @@ function setFocus(focus) {
         currentFocus = FOCUS_CONTENT;
 
     if (oldFocus == FOCUS_CONTENT)
-        deselectEntries();
+        currentlySelectedElement.deselectEntries();
     else if (oldFocus == FOCUS_TITLE)
         titleObject.blur();
 
@@ -604,7 +402,7 @@ function setFocus(focus) {
     } else if (currentFocus == FOCUS_CONTENT) {
         contentContainer.focus();
         if (previousSelectedEntryIndex >= 0)
-            selectEntryWithIndex(previousSelectedEntryIndex);
+            currentlySelectedElement.selectEntryWithIndex(previousSelectedEntryIndex);
     } else if (currentFocus == FOCUS_TITLE) {
         titleObject.focus();
     }
@@ -617,13 +415,13 @@ const keyHandlers = {};
 
 function inputLineKeyDownHandler(e) {
     if (e.key == 'ArrowUp') {
-        if (entryElements.length > 0) {
-            selectEntryWithIndex(entryElements.length - 1);
+        if (currentlySelectedElement) {
+            currentlySelectedElement.selectEntryWithIndex(entryElements.length - 1);
             return false;
         }
     } else if (e.key == 'ArrowDown') {
-        if (entryElements.length > 0){
-            selectEntryWithIndex(0);
+        if (currentlySelectedElement){
+            currentlySelectedElement.selectEntryWithIndex(0);
             return false;
         }
     }
@@ -644,47 +442,51 @@ function titleKeyDownHandler(e) {
 }
 function contentKeyDownHandler(e) {
     if (e.key == 'ArrowLeft') {
-        entryElements[selectedEntryIndex].fold();
+        // currentlySelectedElement.fold();
+        // currentlySelectedElement.stepOut();
+        currentlySelectedElement.stepOut();
     } else if (e.key == 'ArrowRight') {
-        entryElements[selectedEntryIndex].unfold();
+        //currentlySelectedElement.unfold();
+        currentlySelectedElement.stepInto();
     } else if (e.key == ' ') {
-        entryElements[selectedEntryIndex].toggleFold();
+        currentlySelectedElement.toggleFold();
     } else if (e.key == 'ArrowUp') {
         if (e.altKey) {
-            moveEntry(-1);
+            currentlySelectedElement.moveEntry(-1);
         } else if (e.ctrlKey) {
             scrollView(-1);
         } else {
-            selectEntry(-1);
+            currentlySelectedElement.selectEntry(-1);
         }
     } else if (e.key == 'ArrowDown') {
         if (e.altKey) {
-            moveEntry(1);
+            currentlySelectedElement.moveEntry(1);
         } else if (e.ctrlKey) {
             scrollView(1)
         } else {
-            selectEntry(1);
+            currentlySelectedElement.selectEntry(1);
         }
     } else if (e.key == 'Home') {
-        if (entryElements.length > 0)
-            selectEntryWithIndex(0);
+        if (currentlySelectedElement) {
+            currentlySelectedElement.selectEntryWithIndex(0);
+        }
     } else if (e.key == 'End') {
-        if (entryElements.length > 0)
-            selectEntryWithIndex(entryElements.length - 1);
+        if (currentlySelectedElement) {
+            currentlySelectedElement.selectEntryWithIndex(currentlySelectedElement.subTasks.length - 1);
+        }
     } else if (e.key == 'Enter') {
-        entryElements[selectedEntryIndex].enter();
+        currentlySelectedElement.enter();
     } else if (e.key == 'Delete') {
-        entryElements[selectedEntryIndex].delete(askForConfirmationForSubtasks = !e.shiftKey);
+        currentlySelectedElement.delete(askForConfirmationForSubtasks = !e.shiftKey);
     } else if (e.key == 'Backspace') {
         goBack();
     } else if (e.key == 'c' && e.ctrlKey) {
-        if (selectedEntryIndex >= 0)
+        if (currentlySelectedElement)
             copySelectedEntry();
-    } else if (e.key == 'v' && e.ctrlKey) {
-        //if (selectedEntryIndex >= 0)
-        pasteSelectedEntry();
+    } else if (e.key.toLowerCase() == 'v' && e.ctrlKey) {
+        pasteEntry(e.shiftKey);
     } else if (e.key == 'x' && e.ctrlKey) {
-        if (selectedEntryIndex >= 0)
+        if (currentlySelectedElement)
             cutSelectedEntry();
     } else if (e.key == 'PageUp') {
         scrollTop();
@@ -717,6 +519,11 @@ function globalKeyDownHandler(e) {
             setFocus(FOCUS_TITLE);
             document.execCommand('selectAll', false, null);
         }
+    } else if (e.key == 'l' && e .ctrlKey) {
+        console.clear();
+        return false;
+    } else if (e.key == 'F12') {
+
     } else {
         if (currentFocus) {
             if(keyHandlers[currentFocus](e) === false)
@@ -743,4 +550,40 @@ function clamp(min, max, value) {
 }
 
 function find(text) {
+}
+
+
+
+
+
+
+
+
+
+
+
+
+let currentSceneRoot;
+// Treat root level just like any other entry to unify workflow for top-level entries with subtasks
+function _createEverything(contentData) {
+    contentContainer.innerText = "";
+
+    createTitle();
+
+    let parPath = getCurrentPath();
+    if (parPath)
+        parPath.pop();
+    console.log("Create everything for path", getCurrentPath())
+
+    currentSceneRoot = new Entry(
+        entryName = getTitle(),
+        entryData = contentData,
+        parentElement = null,
+        parentContainer = null,
+        parentPath = parPath,
+        subtasksContainer = contentContainer
+    );
+    currentlySelectedElement = currentSceneRoot
+
+    currentlySelectedElement.stepInto();
 }

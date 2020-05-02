@@ -22,7 +22,7 @@ function connectToWebSocket() {
                 'action': 'request_data'
             })
         } else if (jsonData['type'] == 'update_data') {
-            data = jsonData['data'];
+            setDataComingFromServer(jsonData['data']);
             updateDisplayedData();
         }
     });

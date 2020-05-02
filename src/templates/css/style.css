@@ -96,6 +96,8 @@ body {
 
     margin: 5px;
     font-family: 'Roboto', sans-serif;
+
+    cursor: pointer;
 }
 .entryWrapper .entryWrapper {
     background-color: #0000001c;
@@ -132,7 +134,6 @@ body {
 
 .entryEnterButton {
     flex: 1;
-    cursor: pointer;
 }
 .icon {
     flex: 0;
@@ -163,14 +164,10 @@ body {
     padding-right: 15px;
     padding-top: 5px;
     padding-bottom: 5px;
-    cursor: pointer;
 
-    /*
-    should allow click through...
-    pointer-events: none;
-    */
+    cursor: pointer;
 }
-.clientIdLabel{
+.clientIdLabel {
     text-align: right;
     padding: 2px;
     font-family: monospace;
@@ -178,4 +175,34 @@ body {
     font-size: 10pt;
     background-color: transparent;
     flex-wrap: wrap;
+}
+
+.actionBar {
+    flex: 1;
+    display: none;
+    /*
+    border-top: 1px solid white;
+    border: 1px solid white;
+    padding: 5px;
+    */
+    margin-top: 5px;
+    margin-left: -5px;
+    margin-right: 5px;
+}
+.actionButton{
+    width: 42px;
+    background-color: #0003;
+    border-radius: 7px;
+
+    padding: 3px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+
+    margin-left: 10px;
+
+    text-align: center;
+
+    cursor: pointer;
+
+    font-size: 75%;
 }
