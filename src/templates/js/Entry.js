@@ -1,5 +1,6 @@
 const DEBUG = false;
 const FOLD_WHEN_STEPPING = false;
+const SHOW_ACTION_BAR_IMMEDIATELY = true;
 const maxLength = 256; // Not used
 
 class Entry {
@@ -48,7 +49,10 @@ class Entry {
 
         currentlySelectedElement = this;
         this.element.classList.add('focused');
-        this.showActionBarButton.style.display = 'block';
+        if (SHOW_ACTION_BAR_IMMEDIATELY)
+            this.showActionBar();
+        else
+            this.showActionBarButton.style.display = 'block';
 
         this.parent.setSelected(this);
         // this.scrollIntoView(true);
@@ -479,13 +483,13 @@ class Entry {
         this.actionBar.appendChild(pasteButton);
         this.actionBar.appendChild(enterButton);
 
+        element.appendChild(this.actionBar);
+
         if (!subtasksContainer)
             element.appendChild(this.subTasksElement);
 
         if (parentContainer)
             parentContainer.appendChild(element);
-
-        element.appendChild(this.actionBar);
 
         return element;
     }
