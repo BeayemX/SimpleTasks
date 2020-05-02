@@ -108,22 +108,6 @@ function copyCurrentPath() {
     return copyPath(getCurrentPath());
 }
 
-function getElementByPath(path) {
-    console.log("getElementByPath")
-    let currentElement = currentSceneRoot;
-    let currentPath = getCurrentPath(); // currentElement.getElementPath();
-
-    while (currentPath.length > 0) {
-        if (path[path.length - 1] == currentPath[currentPath.length -1]) {
-            path.pop();
-            currentPath.pop();
-        } else {
-            break;
-        }
-    }
-
-    // for (let part of currentPath)
-}
 // // // // // // //
 // Rearrange data //
 // // // // // // //
