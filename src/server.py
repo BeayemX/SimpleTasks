@@ -18,11 +18,15 @@ app.config['DEBUG'] = DEBUG
 
 @app.route('/')
 def index():
-    return render_template("index.html", clientId="test")
+    return render_template("index.html")
 
-@app.route('/<client_id>')
+@app.route('/user/<client_id>')
 def user(client_id):
     return render_template("index.html", clientId=client_id)
+
+@app.route('/serviceworker.js')
+def serviceworker():
+    return app.send_static_file('serviceworker.js')
 
 if __name__ == '__main__':
     print(f"Running server on port {PORT}")

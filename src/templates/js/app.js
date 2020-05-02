@@ -280,21 +280,27 @@ function createTitle() {
     }
     titleBar.appendChild(titleObject);
 
-    // Add delete button
-    if (!isAtRootLevel()) {
-        // Create back button
-        const backButton = document.createElement('div');
-        backButton.setAttribute('class', 'deletebutton');
-        backButton.innerHTML = "X";
+    const titleActionButton = document.createElement('div');
+    titleActionButton.setAttribute('class', 'titleactionbutton');
 
-        backButton.onclick = () => {
+    // Add delete button
+    if (isAtRootLevel()) {
+        titleActionButton.innerHTML = "Logout";
+        titleActionButton.onclick = () => {
+            clearCredentials();
+            window.history.go();
+        }
+    } else {
+        // Create back button
+        titleActionButton.innerHTML = "Delete";
+
+        titleActionButton.onclick = () => {
             const deleteExecuted = sendDelete(getCurrentPath(), currentSceneRoot.subTasks.length > 0);
             if (deleteExecuted)
                 setPath(getParentPath());
         }
-
-        titleBar.appendChild(backButton);
     }
+    titleBar.appendChild(titleActionButton);
 
 }
 
@@ -366,6 +372,13 @@ function sendDelete(deletePath, askConfirmation) {
     })
 
     return true;
+}
+
+function sendLogin(userName) {
+    send({
+        'action': 'login',
+        'client_id': userName
+    })
 }
 
 

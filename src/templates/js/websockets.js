@@ -18,12 +18,16 @@ function connectToWebSocket() {
 
         if (jsonData['type'] == 'connection_established') {
             console.log("Connected. SocketID: ", jsonData['id']);
-            send({
-                'action': 'request_data'
-            })
+            initialLogin();
         } else if (jsonData['type'] == 'update_data') {
             setDataComingFromServer(jsonData['data']);
             updateDisplayedData();
+        } else if (jsonData['type'] == 'login_response') {
+            if (jsonData['status'] == 'success') {
+                loginSuccessful();
+            } else {
+                loginFailed();
+            }
         }
     });
 

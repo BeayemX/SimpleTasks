@@ -2,7 +2,10 @@
 <head>
     <title>Simple tasks</title>
 
+	<link rel="manifest" crossorigin="use-credentials" href="manifest.json">
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0'/>
+
+	<link rel="shortcut icon" type="image/png" href="images/icon-192.png"/>
 
     <link rel="stylesheet" href="css/style.css">
 
@@ -12,11 +15,9 @@
     <script src="js/websockets.js"></script>
     <script src="js/app.js"></script>
     <script src="js/Entry.js"></script>
+    <script src="js/Credentials.js"></script>
 
     <script>
-        // Store variables from Flask
-        var clientID = '{{clientId}}';
-
         function onLoad() {
             // console.clear();
 

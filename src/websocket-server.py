@@ -25,11 +25,17 @@ async def handle_messages(websocket, path): # Will be called once per establishe
             data = json.loads(message)
             print(data)
 
+            if data['action'] == 'login':
+                status = 'success' if user_exists(data['client_id']) else 'failed'
+
+                await websocket.send(json.dumps({
+                    'type': 'login_response',
+                    'status': status
+                }))
 
             if not 'client_id' in data:
                 print("No client ID provided, cancelling request...")
                 continue
-
 
             client_id = data['client_id']
 
@@ -171,6 +177,8 @@ async def handle_messages(websocket, path): # Will be called once per establishe
                 await update_data(websocket, client_id)
 
 
+
+
     except asyncio.streams.IncompleteReadError:
         print("IncompleteReadError")
     except websockets.exceptions.ConnectionClosed:
@@ -256,6 +264,9 @@ def get_overwrite_safe_name(target_name, data):
         contender = or_new_text + str(counter)
         counter += 1
     return contender
+
+def user_exists(client_id):
+    return file_exists(client_id)
 
 # Start server loop
 print("Starting server on port " + str(PORT))

@@ -145,14 +145,14 @@ body {
     margin-left:5;
     margin-right:5;
 }
-.deletebutton {
-    width: 25px;
-    font-size: 140%;
-    color:red;
+.titleactionbutton {
+    flex: 0;
     text-align: center;
 
-    border: 2px solid red;
-    border-radius: 100%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+
+    padding: 7px;
 
     cursor: pointer;
 }
