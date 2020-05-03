@@ -632,6 +632,8 @@ function _createEverything(contentData) {
     currentlySelectedElement = currentSceneRoot
 
     currentlySelectedElement.stepInto();
+    currentlySelectedElement.deselect();
+
 }
 
 

@@ -50,12 +50,7 @@ class Entry {
 
     select = (mouseSelection) => {
         if (currentlySelectedElement == this) {
-
-            if (isMobileAgent){
-                this.toggleActionBar();
-            } else {
-                this.deselect();
-            }
+            this.deselect();
             return;
         }
 
@@ -68,7 +63,9 @@ class Entry {
         this.element.classList.add('focused');
 
         if (SHOW_ACTION_BAR_IMMEDIATELY) {
-            // this.showActionBar();
+            if (isMobileAgent) {
+                this.showActionBar();
+            }
         } else
             this.showActionBarButton.style.display = 'block';
 
@@ -293,7 +290,7 @@ class Entry {
                     "newIndex": newPosition
                 })
             }
-            selectedIndexAfterUpdate = newPosition; // FIXME this does not work with the new system, maybe selection-highlight does work, but things are folded...
+            // selectedIndexAfterUpdate = newPosition; // FIXME this does not work with the new system, maybe selection-highlight does work, but things are folded...
         } else {
             this.subTasks[this.selectedIndex].moveEntry(delta);
         }
