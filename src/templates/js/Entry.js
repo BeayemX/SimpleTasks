@@ -27,6 +27,16 @@ class Entry {
         this.actionBar;
         this.showActionBarButton;
     }
+    getOwner = () => {
+        let currEntry = this;
+        while (true) {
+            if (!currEntry.parent.parent)
+                break;
+
+            currEntry = currEntry.parent;
+        }
+        return currEntry;
+    }
 
     getParentPath = () => {
         return copyPath(this.parentPath);
@@ -38,28 +48,50 @@ class Entry {
         return path;
     }
 
-    select = () => {
+    select = (mouseSelection) => {
         if (currentlySelectedElement == this) {
-            this.deselect();
+
+            if (isMobileAgent){
+                this.toggleActionBar();
+            } else {
+                this.deselect();
+            }
             return;
         }
 
         if (currentlySelectedElement)
             currentlySelectedElement.deselect();
 
+        this.selectedIndex = -1;
+
         currentlySelectedElement = this;
         this.element.classList.add('focused');
-        if (SHOW_ACTION_BAR_IMMEDIATELY)
-            this.showActionBar();
-        else
+
+        if (SHOW_ACTION_BAR_IMMEDIATELY) {
+            // this.showActionBar();
+        } else
             this.showActionBarButton.style.display = 'block';
 
         this.parent.setSelected(this);
-        // this.scrollIntoView(true);
+
+        if (!mouseSelection) {
+            // this.getOwner().element.scrollIntoView(true);
+            const theValue = this.element.offsetTop - contentContainer.scrollTop;
+            if (theValue < window.innerHeight * 0.25)
+               contentContainer.scrollTo(0, this.element.offsetTop - window.innerHeight * 0.25);
+            if (theValue > window.innerHeight * 0.75)
+                contentContainer.scrollTo(0, this.element.offsetTop - window.innerHeight * 0.75);
+        }
+
+        if (USE_ELEMENT_LIST_WORKAROUND)
+            setElementIndexListIndexToElement(this);
+
+        setFocus(FOCUS_CONTENT);
     };
 
     setSelected = (subtask) => {
         this.selectedIndex = this.subTasks.indexOf(subtask);
+        // console.log("Selected Task:", this.subTasks[this.selectedIndex].getElementPath());
     }
 
     deselect = () => {
@@ -72,9 +104,7 @@ class Entry {
     };
 
     showActionBar = () => {
-        if (isMobileAgent){
-            this.actionBar.style.display = "flex";
-        }
+        this.actionBar.style.display = "flex";
     }
 
     hideActionBar = () => {
@@ -140,6 +170,8 @@ class Entry {
             } //*/
             //reassignIndices();
             this.subTasksElement.style.display = "flex";
+            if (this.element) // HACK to prevent this from being called while creating this entry itself
+                rebuildElementIndexList(true);
         } else {
             this.subTasks[this.selectedIndex].unfold();
         }
@@ -167,6 +199,8 @@ class Entry {
             //this.subTasks = []
             // reassignIndices();
             this.subTasksElement.style.display = "none";
+            if (this.element) // HACK to prevent this from being called while creating this entry itself
+                rebuildElementIndexList(true);
         } else {
             this.subTasks[this.selectedIndex].unfold();
         }
@@ -219,65 +253,25 @@ class Entry {
         }
     }
 
-    /*
-    stepOver = () => {
-        if (this.parent) {
-            this.parent.selectEntry(1);
-        }
-    }*/
-
     deselectEntries = () => {
         if (this.selectedIndex == -1) {
             for (let element of this.subTasks)
                 element.deselect();
 
-            previousSelectedEntryIndex = this.selectedIndex;
+            previousSelectedEntryIndex = this.selectedIndex; // TODO ??
         } else {
             this.subTasks[this.selectedIndex].deselect()
         }
     }
 
-    selectEntry = (delta, execute=false) => {
-        let forwardToSubtasks = this.subTasks.length > 0 && !this.folded;
-        if (!execute && forwardToSubtasks) {
-            console.log("Forwarding to children")
-            //this.subTasks[this.selectedIndex].selectEntry(delta, true);
-            if (delta > 0)
-                this.stepInto();
-            else
-                this.stepOut();
-        } else {
-            if (execute)
-            {
-                let newIndex = this.selectedIndex;
-                newIndex += delta;
-
-                if (newIndex == -1 || newIndex == this.subTasks.length) { // if out of bounds -> forward to parent
-                    console.log("Out of bounds")
-                    this.parent.selectEntry(delta, execute);
-                } else {
-                    newIndex = clamp(0, this.subTasks.length - 1, newIndex);
-                    this.deselectEntries();
-                    this.selectEntryWithIndex(newIndex);
-                }
-            } else {
-                this.parent.selectEntry(delta, true);
-            }
-        }
-    }
 
     selectEntryWithIndex = (newIndex) => {
         //if (this.selectedIndex == -1) {
             if (newIndex >= 0)
                 this.deselectEntries();
 
-            // TODO shouldn't this be done in setFocus()?
-            input.blur();
-            titleObject.blur();
-
             this.selectedIndex = newIndex;
             this.subTasks[this.selectedIndex].select();
-            setFocus(FOCUS_CONTENT);
         //} else {
             //this.selectEntryWithIndex[this.selectedIndex].selectEntry(delta)
         //}
@@ -385,7 +379,7 @@ class Entry {
         }
 
         label.onclick = (e) => {
-            this.select();
+            this.select(true);
             e.stopPropagation();
             return false;
         };
@@ -429,7 +423,9 @@ class Entry {
         }
 
 
-
+        /*
+        this.unfold();
+        /*/
         if (DEBUG) {
             this.unfold();
         } else {
@@ -438,7 +434,7 @@ class Entry {
             } else {
                 this.unfold();
             }
-        }
+        } // */
 
         this.actionBar = document.createElement('div');
         this.actionBar.setAttribute('class', 'actionBar');

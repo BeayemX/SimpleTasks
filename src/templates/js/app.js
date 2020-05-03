@@ -165,6 +165,8 @@ function updateDisplayedData() {
         currentlySelectedElement.selectEntryWithIndex(selectedIndexAfterUpdate);
         selectedIndexAfterUpdate = -1;
     }
+
+    rebuildElementIndexList();
 }
 
 function createInputLine() {
@@ -284,8 +286,8 @@ function createTitle() {
                 setPath(getParentPath());
         }
     }
-    titleBar.appendChild(titleActionButton);
 
+    titleBar.appendChild(titleActionButton);
 }
 
 
@@ -413,14 +415,19 @@ function goForward() {
 function setFocus(focus) {
     const oldFocus = currentFocus;
     currentFocus = focus;
+
     if (oldFocus == currentFocus)
         return;
 
     if (!currentFocus)
         currentFocus = FOCUS_CONTENT;
 
-    if (oldFocus == FOCUS_CONTENT)
-        currentlySelectedElement.deselectEntries();
+    if (oldFocus == FOCUS_CONTENT) {
+        if (currentlySelectedElement){
+            currentlySelectedElement.deselect();
+            elementIndexListIndex = -1;
+        }
+    }
     else if (oldFocus == FOCUS_TITLE)
         titleObject.blur();
 
@@ -428,8 +435,12 @@ function setFocus(focus) {
         input.focus();
     } else if (currentFocus == FOCUS_CONTENT) {
         contentContainer.focus();
-        if (previousSelectedEntryIndex >= 0)
-            currentlySelectedElement.selectEntryWithIndex(previousSelectedEntryIndex);
+        if (USE_ELEMENT_LIST_WORKAROUND) {
+        } else {
+            if (previousSelectedEntryIndex >= 0) {
+                currentlySelectedElement.selectEntryWithIndex(previousSelectedEntryIndex);
+            }
+        }
     } else if (currentFocus == FOCUS_TITLE) {
         titleObject.focus();
     }
@@ -442,15 +453,18 @@ const keyHandlers = {};
 
 function inputLineKeyDownHandler(e) {
     if (e.key == 'ArrowUp') {
-        if (currentlySelectedElement) {
-            currentlySelectedElement.selectEntryWithIndex(entryElements.length - 1);
-            return false;
-        }
+        if (USE_ELEMENT_LIST_WORKAROUND)
+            selectElementIndexListElementByIndex(elementIndexList.length - 1);
+        else
+            currentlySelectedElement.selectEntryWithIndex(currentlySelectedElement.subTasks.length - 1);
+        return false;
     } else if (e.key == 'ArrowDown') {
-        if (currentlySelectedElement){
+        if (USE_ELEMENT_LIST_WORKAROUND)
+            selectElementIndexListElementByIndex(0);
+        else
             currentlySelectedElement.selectEntryWithIndex(0);
-            return false;
-        }
+
+        return false;
     }
     return true;
 }
@@ -470,7 +484,6 @@ function titleKeyDownHandler(e) {
 function contentKeyDownHandler(e) {
     if (e.key == 'ArrowLeft' && e.altKey == false) {
         // currentlySelectedElement.fold();
-        // currentlySelectedElement.stepOut();
         currentlySelectedElement.stepOut();
     } else if (e.key == 'ArrowRight' && e.altKey == false) {
         //currentlySelectedElement.unfold();
@@ -483,7 +496,10 @@ function contentKeyDownHandler(e) {
         } else if (e.ctrlKey) {
             scrollView(-1);
         } else {
-            currentlySelectedElement.selectEntry(-1);
+            if (USE_ELEMENT_LIST_WORKAROUND)
+                selectNextItemInElementIndexList(-1);
+            else
+                currentlySelectedElement.selectEntry(-1);
         }
     } else if (e.key == 'ArrowDown') {
         if (e.altKey) {
@@ -491,15 +507,24 @@ function contentKeyDownHandler(e) {
         } else if (e.ctrlKey) {
             scrollView(1)
         } else {
-            currentlySelectedElement.selectEntry(1);
+            if (USE_ELEMENT_LIST_WORKAROUND)
+                selectNextItemInElementIndexList(1);
+            else
+                currentlySelectedElement.selectEntry(1);
         }
     } else if (e.key == 'Home') {
         if (currentlySelectedElement) {
-            currentlySelectedElement.selectEntryWithIndex(0);
+            if (USE_ELEMENT_LIST_WORKAROUND)
+                selectElementIndexListElementByIndex(0);
+            else
+                currentlySelectedElement.selectEntryWithIndex(0);
         }
     } else if (e.key == 'End') {
         if (currentlySelectedElement) {
-            currentlySelectedElement.selectEntryWithIndex(currentlySelectedElement.subTasks.length - 1);
+            if (USE_ELEMENT_LIST_WORKAROUND)
+                selectElementIndexListElementByIndex(elementIndexList.length - 1);
+            else
+                currentlySelectedElement.selectEntryWithIndex(currentlySelectedElement.subTasks.length - 1);
         }
     } else if (e.key == 'Enter') {
         currentlySelectedElement.enter();
@@ -607,4 +632,55 @@ function _createEverything(contentData) {
     currentlySelectedElement = currentSceneRoot
 
     currentlySelectedElement.stepInto();
+}
+
+
+
+// This keeps a list of all elements sorted by their entry order into the DOM tree
+// TODO Maybe it would be better to make it work without this.
+// Entry-class should handle all the logic
+const USE_ELEMENT_LIST_WORKAROUND = true;
+
+let elementIndexList = [];
+let elementIndexListIndex = 0;
+
+function selectNextItemInElementIndexList(delta) {
+    const newIndex = clamp(0, elementIndexList.length -1, elementIndexListIndex + delta)
+
+    if (elementIndexListIndex != newIndex)
+        selectElementIndexListElementByIndex(newIndex);
+}
+
+function selectElementIndexListElementByIndex(index) {
+    elementIndexListIndex = index;
+    elementIndexList[index].select();
+}
+
+function rebuildElementIndexList(keepCounter) {
+    elementIndexList = [];
+
+    if (!keepCounter)
+        elementIndexListIndex = 0;
+
+    function work(node) {
+        elementIndexList.push(node);
+
+        if (!node.folded && node.subTasks.length > 0) {
+            for (let subnode of node.subTasks) {
+                work(subnode);
+            }
+        }
+    }
+
+    work(currentSceneRoot);
+    elementIndexList.shift(); // remove first element (root element)
+}
+
+function setElementIndexListIndexToElement(entry){
+    for (let i=0; i<elementIndexList.length; ++i) {
+        if (elementIndexList[i] === entry) {
+            elementIndexListIndex = i;
+            return;
+        }
+    }
 }
