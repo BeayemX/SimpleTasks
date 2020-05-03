@@ -1,7 +1,7 @@
 const DEBUG = false;
 const FOLD_WHEN_STEPPING = false;
-const SHOW_ACTION_BAR_IMMEDIATELY = true;
 const maxLength = 256; // Not used
+const LONG_PRESS_DURATION_MS = 500;
 
 class Entry {
     constructor(entryName, entryData, parent, parentContainer, parentPath, subtasksContainer = null) {
@@ -62,13 +62,6 @@ class Entry {
         currentlySelectedElement = this;
         this.element.classList.add('focused');
 
-        if (SHOW_ACTION_BAR_IMMEDIATELY) {
-            if (isMobileAgent) {
-                this.showActionBar();
-            }
-        } else
-            this.showActionBarButton.style.display = 'block';
-
         this.parent.setSelected(this);
 
         if (!mouseSelection) {
@@ -101,7 +94,8 @@ class Entry {
     };
 
     showActionBar = () => {
-        this.actionBar.style.display = "flex";
+        if (isMobileAgent)
+            this.actionBar.style.display = "flex";
     }
 
     hideActionBar = () => {
@@ -371,15 +365,43 @@ class Entry {
             this.enter();
             // this.toggleActionBar();
             // this.select();
+            e.preventDefault();
             e.stopPropagation();
             return false;
         }
 
         label.onclick = (e) => {
             this.select(true);
+            e.preventDefault();
             e.stopPropagation();
             return false;
         };
+        label.onselectstart = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        label.oncontextmenu = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        label.ontouchstart = (e) => {
+            this.actionBarTimeout = setTimeout(() => {
+                this.select();
+                if (currentlySelectedElement == this)
+                    this.showActionBar();
+            }, LONG_PRESS_DURATION_MS)
+        }
+
+        const cancelLongPress = (e) => {
+            if (this.actionBarTimeout){
+                clearTimeout(this.actionBarTimeout);
+                this.actionBarTimeout = null;
+            }
+        }
+        label.ontouchend = cancelLongPress;
+        label.ontouchmove = cancelLongPress;
 
         // Button for showing ActionBar
         const showActionBarButton = document.createElement('div');
