@@ -209,7 +209,7 @@ function isAtRootLevel() {
 function createTitle() {
     titleBar.innerHTML = '';
 
-    //*
+    /*
     if (!isAtRootLevel()) {
         // Create back button
         const backButton = document.createElement('div');
