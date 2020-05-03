@@ -105,7 +105,7 @@ body {
     margin: 5px;
     font-family: 'Roboto', sans-serif;
 
-    cursor: pointer;
+    cursor: default;
 }
 .entryWrapper .entryWrapper {
     background-color: #0000001c;
@@ -162,7 +162,7 @@ body {
 
     padding: 7px;
 
-    cursor: pointer;
+    cursor: default;
 }
 .subcounter {
     background-color: #fff3;
@@ -173,7 +173,7 @@ body {
     padding-top: 5px;
     padding-bottom: 5px;
 
-    cursor: pointer;
+    cursor: default;
 }
 .clientIdLabel {
     text-align: right;
@@ -214,7 +214,7 @@ body {
 
     text-align: center;
 
-    cursor: pointer;
+    cursor: default;
 
     font-size: 75%;
 }
