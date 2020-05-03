@@ -169,31 +169,47 @@ function updateDisplayedData() {
     rebuildElementIndexList();
 }
 
+function addEntryFromInput(jumpInto) {
+    const potentialText = input.value;
+    const actualInputValue = potentialText.trim();
+
+    if (actualInputValue == "")
+        return;
+
+    const newEntryText = actualInputValue;
+    input.value = '';
+
+    if (jumpInto) {
+        pathToEnterWhenReceivingServerUpdate = copyCurrentPath()
+        pathToEnterWhenReceivingServerUpdate.push(newEntryText);
+    }
+
+    addEntry(newEntryText);
+}
+
 function createInputLine() {
     input = document.createElement('input');
     input.onclick = () => {
     }
+
     input.onkeypress = (e) => {
-        const actualInputValue = input.value.trim();
-        if (actualInputValue == "")
-            return;
-
         if (e.key == 'Enter') {
-            const newEntryText = actualInputValue;
-            input.value = '';
-
-            if (e.shiftKey) {
-                pathToEnterWhenReceivingServerUpdate = copyCurrentPath()
-                pathToEnterWhenReceivingServerUpdate.push(newEntryText);
-            }
-
-            addEntry(newEntryText);
+            addEntryFromInput(e.shiftKey);
         }
-
     }
+
     input.onfocus = () => { setFocus(FOCUS_INPUT_LINE);}
     input.onblur = () => { setFocus(null);}
     inputLine.appendChild(input);
+
+
+    const sendButton = document.createElement('button');
+    sendButton.innerText = "Add";
+    sendButton.onclick = () => {
+        addEntryFromInput();
+    }
+    inputLine.appendChild(sendButton);
+
 }
 
 function getTitle() {
