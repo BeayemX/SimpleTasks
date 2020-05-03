@@ -47,15 +47,21 @@ class Entry {
         path.push(this.name);
         return path;
     }
+    forceSelect(mouseSelect) {
+        this.select(mouseSelect, true);
+    }
+    select = (mouseSelection, force) => {
+        const itsMe = currentlySelectedElement === this;
+        if ( itsMe && force) { // do not deselect me
+            // pass
+        } else {
+            if (currentlySelectedElement) {
+                currentlySelectedElement.deselect();
 
-    select = (mouseSelection) => {
-        if (currentlySelectedElement == this) {
-            this.deselect();
-            return;
+                if (itsMe)
+                    return;
+            }
         }
-
-        if (currentlySelectedElement)
-            currentlySelectedElement.deselect();
 
         this.selectedIndex = -1;
 
@@ -388,7 +394,7 @@ class Entry {
         }
         label.ontouchstart = (e) => {
             this.actionBarTimeout = setTimeout(() => {
-                this.select();
+                this.forceSelect(true);
                 if (currentlySelectedElement == this)
                     this.showActionBar();
             }, LONG_PRESS_DURATION_MS)
