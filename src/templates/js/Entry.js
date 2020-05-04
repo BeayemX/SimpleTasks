@@ -376,7 +376,7 @@ class Entry {
             return false;
         }
 
-        label.onclick = (e) => {
+        element.onclick = (e) => {
             this.select(true);
             e.preventDefault();
             e.stopPropagation();
