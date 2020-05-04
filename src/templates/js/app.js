@@ -166,12 +166,16 @@ function updateDisplayedData() {
         setPath(tmpPath);
     }
 
+    rebuildElementIndexList();
+
     if (selectedIndexAfterUpdate >= 0) {
-        currentlySelectedElement.selectEntryWithIndex(selectedIndexAfterUpdate);
+        // currentlySelectedElement.selectEntryWithIndex(selectedIndexAfterUpdate);
+        elementIndexListIndex = selectedIndexAfterUpdate;
+        selectElementIndexListElementByIndex(selectedIndexAfterUpdate);
+
         selectedIndexAfterUpdate = -1;
     }
 
-    rebuildElementIndexList();
 }
 
 function addEntryFromInput(jumpInto) {
@@ -558,7 +562,10 @@ function contentKeyDownHandler(e) {
         currentlySelectedElement.toggleFold();
     } else if (e.key == 'ArrowUp') {
         if (e.altKey) {
-            currentlySelectedElement.moveEntry(-1);
+            if (currentlySelectedElement) {
+                selectedIndexAfterUpdate = Math.max(0, elementIndexListIndex -1);
+                currentlySelectedElement.moveEntry(-1);
+            }
         } else if (e.ctrlKey) {
             scrollView(-1);
         } else {
@@ -569,7 +576,10 @@ function contentKeyDownHandler(e) {
         }
     } else if (e.key == 'ArrowDown') {
         if (e.altKey) {
-            currentlySelectedElement.moveEntry(1);
+            if (currentlySelectedElement) {
+                selectedIndexAfterUpdate = Math.min(elementIndexList.length - 1, elementIndexListIndex + 1);
+                currentlySelectedElement.moveEntry(1);
+            }
         } else if (e.ctrlKey) {
             scrollView(1)
         } else {
