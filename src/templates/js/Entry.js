@@ -94,7 +94,7 @@ class Entry {
     deselect = () => {
         this.element.classList.remove('focused');
         this.showActionBarButton.style.display = 'none';
-        this.hideActionBar();
+        //this.hideActionBar();
 
         if (currentlySelectedElement === this)
             currentlySelectedElement = null;
@@ -398,8 +398,9 @@ class Entry {
         label.ontouchstart = (e) => {
             this.actionBarTimeout = setTimeout(() => {
                 this.forceSelect(true);
-                if (currentlySelectedElement == this)
-                    this.showActionBar();
+                if (currentlySelectedElement == this) {
+                    //this.showActionBar();
+                }
             }, LONG_PRESS_DURATION_MS)
         }
 
@@ -420,7 +421,7 @@ class Entry {
         actualTask.appendChild(showActionBarButton);
 
         showActionBarButton.onclick = (e) => {
-            this.toggleActionBar();
+            //this.toggleActionBar();
             e.stopPropagation();
             return false;
         }
