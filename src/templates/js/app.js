@@ -391,15 +391,15 @@ function sendLogin(userName) {
 function createToolBar() {
     function addButtonsToToolbar(btns, tbar) {
         for (let button of btns) {
-            const craptToCenterVertically = document.createElement('div');
+            const buttonWrapper = document.createElement('div');
 
-            const buttonElement = document.createElement('div');
-            buttonElement.innerText = button[0];
-            buttonElement.onclick = button[1];
+            const buttonLabel = document.createElement('div');
+            buttonLabel.innerText = button[0];
 
-            craptToCenterVertically.appendChild(buttonElement);
+            buttonWrapper.onclick = button[1];
+            buttonWrapper.appendChild(buttonLabel);
 
-            tbar.appendChild(craptToCenterVertically);
+            tbar.appendChild(buttonWrapper);
         }
     }
 
