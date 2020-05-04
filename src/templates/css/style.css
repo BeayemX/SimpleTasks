@@ -247,6 +247,6 @@ body {
 .toolbar > * > div {
     flex: 1;
     color: #fff;
-    cursor: pointer;
+    cursor: default;
     font-size: 0.8em;
 }
