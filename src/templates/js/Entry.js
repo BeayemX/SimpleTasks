@@ -73,10 +73,12 @@ class Entry {
         if (!mouseSelection) {
             // this.getOwner().element.scrollIntoView(true);
             const theValue = this.element.offsetTop - contentContainer.scrollTop;
-            if (theValue < window.innerHeight * 0.25)
-               contentContainer.scrollTo(0, this.element.offsetTop - window.innerHeight * 0.25);
-            if (theValue > window.innerHeight * 0.75)
-                contentContainer.scrollTo(0, this.element.offsetTop - window.innerHeight * 0.75);
+            const upperLimit = 0.25
+            const lowerLimit = 0.75
+            if (theValue < window.innerHeight * upperLimit)
+               contentContainer.scrollTo(0, this.element.offsetTop - window.innerHeight * upperLimit);
+            if (theValue > window.innerHeight * lowerLimit);
+                contentContainer.scrollTo(0, this.element.offsetTop - window.innerHeight * lowerLimit);
         }
 
         if (USE_ELEMENT_LIST_WORKAROUND)
