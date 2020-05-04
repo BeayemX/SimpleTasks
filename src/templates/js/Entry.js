@@ -83,6 +83,7 @@ class Entry {
             setElementIndexListIndexToElement(this);
 
         setFocus(FOCUS_CONTENT);
+        showToolbar();
     };
 
     setSelected = (subtask) => {
@@ -97,6 +98,8 @@ class Entry {
 
         if (currentlySelectedElement === this)
             currentlySelectedElement = null;
+
+        showToolbar(false);
     };
 
     showActionBar = () => {
@@ -464,42 +467,36 @@ class Entry {
         this.actionBar = document.createElement('div');
         this.actionBar.setAttribute('class', 'actionBar');
 
-        const spacer = document.createElement('div');
-        spacer.setAttribute('class', 'spacer');
-
         const deleteButton = document.createElement('div');
         deleteButton.innerHTML = "Delete";
-        deleteButton.setAttribute('class', 'actionButton');
+        // deleteButton.setAttribute('class', 'actionButton');
         deleteButton.onclick = () => this.delete();
 
         const enterButton = document.createElement('div');
         enterButton.innerHTML = "Enter";
-        enterButton.setAttribute('class', 'actionButton');
+        // enterButton.setAttribute('class', 'actionButton');
         enterButton.onclick = () => this.enter();
 
         const copyButton = document.createElement('div');
         copyButton.innerHTML = "Copy";
-        copyButton.setAttribute('class', 'actionButton');
+        // copyButton.setAttribute('class', 'actionButton');
         copyButton.onclick = () => this.copy();
 
         const pasteButton = document.createElement('div');
         pasteButton.innerHTML = "Paste";
-        pasteButton.setAttribute('class', 'actionButton');
+        // pasteButton.setAttribute('class', 'actionButton');
         pasteButton.onclick = () => this.paste();
 
         const moveUpButton = document.createElement('div');
         moveUpButton.innerHTML = "Up";
-        moveUpButton.setAttribute('class', 'actionButton');
         moveUpButton.onclick = () => this.moveEntry(-1);
 
         const moveDownButton = document.createElement('div');
         moveDownButton.innerHTML = "Down";
-        moveDownButton.setAttribute('class', 'actionButton');
         moveDownButton.onclick = () => this.moveEntry(1);
 
         // Button order
         this.actionBar.appendChild(deleteButton);
-        this.actionBar.appendChild(spacer);
         this.actionBar.appendChild(moveUpButton);
         this.actionBar.appendChild(moveDownButton);
         this.actionBar.appendChild(copyButton);

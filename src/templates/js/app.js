@@ -44,6 +44,8 @@ function init() {
         console.log("Using mobile client: ", navigator.userAgent)
     }
 
+    createToolBar();
+
     window.onpopstate = function(event) {
         restorePath(event.state.path);
     }
@@ -381,6 +383,51 @@ function sendLogin(userName) {
         'action': 'login',
         'client_id': userName
     })
+}
+
+function createToolBar() {
+    function addButtonsToToolbar(btns, tbar) {
+        for (let button of btns) {
+            const craptToCenterVertically = document.createElement('div');
+
+            const buttonElement = document.createElement('div');
+            buttonElement.innerText = button[0];
+            buttonElement.onclick = button[1];
+
+            craptToCenterVertically.appendChild(buttonElement);
+
+            tbar.appendChild(craptToCenterVertically);
+        }
+    }
+
+    let buttons = [];
+    // buttons.push("Add", () => {}) // Template
+    // buttons.push(["Enter", () => { currentlySelectedElement.enter(); }])
+    buttons.push(["Cut", () => { currentlySelectedElement.cut(); }])
+    buttons.push(["Copy", () => { copySelectedEntry(); }])
+    buttons.push(["Paste", () => { pasteEntry(); }])
+    buttons.push(["Up", () => { currentlySelectedElement.moveEntry(-1); }])
+    buttons.push(["Down", () => { currentlySelectedElement.moveEntry(1); }])
+    // buttons.push(["Delete", () => { currentlySelectedElement.delete(); }])
+
+    addButtonsToToolbar(buttons, selectionToolbar);
+
+    buttons = [];
+    // buttons.push("Add", () => {}) // Template
+    buttons.push(["Rand Entry", () => { addEntry("test"); }])
+
+    addButtonsToToolbar(buttons, globalToolbar);
+    globalToolbar.style.display = 'none'
+
+    // global
+    toolbarDefaultStyleDisplay = selectionToolbar.style.display;
+}
+
+function showToolbar(value = true) {
+    if (value)
+        selectionToolbar.style.display = toolbarDefaultStyleDisplay;
+    else
+        selectionToolbar.style.display = "none";
 }
 
 

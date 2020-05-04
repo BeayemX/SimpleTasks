@@ -19,11 +19,6 @@
 
     <script>
         function onLoad() {
-            // console.clear();
-
-            var contentContainer = document.getElementById('contentContainer');
-            var inputLine = document.getElementById('inputLine');
-            var titleBar = document.getElementById('titleBar');
             var body = document.body;
 
             createInputLine()
@@ -46,9 +41,8 @@
         <div id="titleBar"></div>
         <div id="contentContainer"></div>
         <div class='spacer'></div>
-        <!--
-            <div class='clientIdLabel'>{{clientId}}</div>
-        -->
+        <div id="selectionToolbar" class='toolbar'></div>
+        <div id="globalToolbar" class='toolbar'></div>
         <div id="inputLine"></div>
     </div>
 </body>

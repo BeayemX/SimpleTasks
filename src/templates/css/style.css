@@ -175,15 +175,6 @@ body {
 
     cursor: default;
 }
-.clientIdLabel {
-    text-align: right;
-    padding: 2px;
-    font-family: monospace;
-    color: grey;
-    font-size: 10pt;
-    background-color: transparent;
-    flex-wrap: wrap;
-}
 
 .actionBar {
     flex: 1;
@@ -200,7 +191,7 @@ body {
     padding-top: 10px;
     padding-bottom: 10px;
 }
-.actionButton{
+.actionBar > div {
     width: 42px;
     background-color: #0003;
     border-radius: 7px;
@@ -217,4 +208,45 @@ body {
     cursor: default;
 
     font-size: 75%;
+}
+
+.toolbar {
+    flex: 0;
+
+    display: flex;
+    background-color: #555;
+    background-color: #333;
+    padding: 5px;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    /*
+    justify-content: space-between;
+    */
+}
+
+.toolbar > div {
+    float: left;
+    /*
+    width: 55px;
+    */
+    flex: 1;
+    height: 30px;
+
+    border: 1px solid black;
+    margin: 3px;
+    padding: 3px;
+
+    background-color: #fff3;
+    text-align: center;
+    border-radius: 7px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.toolbar > * > div {
+    flex: 1;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.8em;
 }
