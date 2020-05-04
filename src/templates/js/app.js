@@ -134,7 +134,10 @@ function copySelectedEntry() {
     cutData.path = "";
 }
 
-function pasteEntry(pasteIntoSelectedEntry) {
+function pasteEntry() {
+    if (currentlySelectedElement)
+        pasteIntoSelectedEntry = true;
+
     console.log("pasteEntry", pasteIntoSelectedEntry)
     sendPaste(pasteIntoSelectedEntry);
 
@@ -599,7 +602,7 @@ function contentKeyDownHandler(e) {
         if (currentlySelectedElement)
             copySelectedEntry();
     } else if (e.key.toLowerCase() == 'v' && e.ctrlKey) {
-        pasteEntry(e.shiftKey);
+        pasteEntry();
     } else if (e.key == 'x' && e.ctrlKey) {
         if (currentlySelectedElement)
             cutSelectedEntry();
