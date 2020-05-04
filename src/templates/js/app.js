@@ -579,18 +579,25 @@ function contentKeyDownHandler(e) {
                 currentlySelectedElement.selectEntry(1);
         }
     } else if (e.key == 'Home') {
-        if (currentlySelectedElement) {
-            if (USE_ELEMENT_LIST_WORKAROUND)
+        if (USE_ELEMENT_LIST_WORKAROUND){
+            if (currentlySelectedElement !== elementIndexList[0])
                 selectElementIndexListElementByIndex(0);
-            else
+        }
+        else {
+            if (currentlySelectedElement) {
                 currentlySelectedElement.selectEntryWithIndex(0);
+            }
         }
     } else if (e.key == 'End') {
-        if (currentlySelectedElement) {
-            if (USE_ELEMENT_LIST_WORKAROUND)
+        if (USE_ELEMENT_LIST_WORKAROUND)
+        {
+            if (currentlySelectedElement !== elementIndexList[elementIndexList.length - 1])
                 selectElementIndexListElementByIndex(elementIndexList.length - 1);
-            else
+        }
+        else {
+            if (currentlySelectedElement) {
                 currentlySelectedElement.selectEntryWithIndex(currentlySelectedElement.subTasks.length - 1);
+            }
         }
     } else if (e.key == 'Enter') {
         currentlySelectedElement.enter();
