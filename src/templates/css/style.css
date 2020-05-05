@@ -28,26 +28,33 @@ body {
     flex: 1;
 }
 #inputLine {
+    flex: 0;
     display: flex;
     flex-flow: row;
-
-    padding: 10px;
+    margin: 0;
+    padding: 7px;
     background-color: #333;
 }
+
 #inputLine input {
     flex: 1;
     padding: 5px;
-
+    margin-left: 5px;
+    margin-right: 5px;
     font-size: 14pt;
     background-color: #ccc;
+    min-width: 0;
 }
 
-#inputLine button {
+#inputLine div {
     flex: 0;
+    display: flex;
+}
+#inputLine div button {
+    flex: 1;
+    font-size: 12pt;
     padding-left: 15px;
     padding-right: 15px;
-    margin-left: 10px;
-    font-size: 12pt;
 }
 
 #titleBar {
@@ -63,6 +70,22 @@ body {
     justify-content: center;
     */
 }
+
+#homebutton {
+    flex: 0;
+    display: flex;
+    margin-left: -2;
+    border-radius: 10%;
+}
+#homebutton img{
+    flex: 1;
+    height: 30px;
+    padding: 7px;
+}
+#homebutton.customstartingpath {
+    border: 1px solid #398513ff;
+}
+
 .backbutton {
     flex: 0;
     cursor: pointer;
@@ -138,6 +161,8 @@ body {
     border-left: 5px solid cyan;
     */
     background-color: #090a;
+    background-color: #398513ff;
+
 }
 
 .entryEnterButton {

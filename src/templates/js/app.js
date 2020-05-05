@@ -7,6 +7,7 @@ const TITLE = "Simple Tasks";
 const DELETE_ICON = "&#10060;";
 // const BACK_ARROW = "&#129120;";
 const BACK_ARROW = "../";
+const STARTING_PATH = 'StartingPath'
 
 // // Focus
 const FOCUS_INPUT_LINE = "input";
@@ -14,9 +15,8 @@ const FOCUS_TITLE = "title";
 const FOCUS_CONTENT = "content";
 
 // Members
-// let history = []
 let _currentPath = [];
-let historyIndex = 0;
+let historyIndex = 0; // TODO remove occurences? Needed for slicing? could .lenght be used?
 
 let data = {};
 let selectedEntryIndex = 0; // TODO remove all occurences
@@ -34,7 +34,7 @@ let input;
 // Do after network-update
 let pathToEnterWhenReceivingServerUpdate = null;
 let selectedIndexAfterUpdate = -1; // TODO move to entry class?
-
+let initialized = false;
 
 let isMobileAgent = false;
 
@@ -50,7 +50,28 @@ function init() {
         restorePath(event.state.path);
     }
 
+    startingPath = localStorage.getItem(STARTING_PATH);
+
+    if (startingPath) {
+        startingPath = JSON.parse(startingPath);
+
+        if (dataPathDoesExists(startingPath)) {
+            _currentPath = startingPath;
+        } else {
+            clearStartingPath();
+        }
+    }
+
+    initialized = true;
     setPath(_currentPath);
+}
+
+function dataPathDoesExists(path) {
+    if (accessPathData(path)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 // // // // // //
@@ -58,6 +79,7 @@ function init() {
 // // // // // //
 
 function setDataComingFromServer(newData) {
+    console.log("Setting data from server")
     data = newData;
 }
 
@@ -157,6 +179,9 @@ function cutSelectedEntry() {
 // User Interface //
 // // // // // // //
 function updateDisplayedData() {
+    if (!initialized)
+        init();
+
     _createEverything(getCurrentData());
 
     if (pathToEnterWhenReceivingServerUpdate) {
@@ -197,6 +222,20 @@ function addEntryFromInput(jumpInto) {
 }
 
 function createInputLine() {
+    // Create Logo
+    let homebutton = document.createElement('div');
+    let icon = document.createElement('img');
+    homebutton.setAttribute('id', "homebutton");
+    icon.setAttribute('src', "images/icon-192.png");
+    homebutton.appendChild(icon);
+
+    homebutton.onclick = () => {  // TODO use long press?
+        if (startingPath)
+            clearStartingPath();
+        else
+            makeCurrentPathStartingPath();
+    };
+
     input = document.createElement('input');
     input.onclick = () => {
     }
@@ -209,16 +248,19 @@ function createInputLine() {
 
     input.onfocus = () => { setFocus(FOCUS_INPUT_LINE);}
     input.onblur = () => { setFocus(null);}
-    inputLine.appendChild(input);
 
-
+    const sendButtonWrapper = document.createElement('div');
     const sendButton = document.createElement('button');
     sendButton.innerText = "Add";
     sendButton.onclick = () => {
         addEntryFromInput();
     }
-    inputLine.appendChild(sendButton);
+    sendButtonWrapper.appendChild(sendButton);
 
+    // Add to app
+    inputLine.appendChild(homebutton);
+    inputLine.appendChild(input);
+    inputLine.appendChild(sendButtonWrapper);
 }
 
 function getTitle() {
@@ -250,7 +292,7 @@ function createTitle() {
     }//*/
 
     // Create title text
-    titleObject = document.createElement('div');
+    let titleObject = document.createElement('div');
     titleObject.setAttribute('class', 'title');
     if (!isAtRootLevel()) {
         titleObject.setAttribute('contenteditable', true);
@@ -717,8 +759,16 @@ function _createEverything(contentData) {
     currentlySelectedElement.stepInto();
     currentlySelectedElement.deselect();
 
+    updateHomeIcon();
 }
 
+function updateHomeIcon() {
+    if (startingPath){
+        document.querySelector('#homebutton').classList.add('customstartingpath');
+    } else {
+        document.querySelector('#homebutton').classList.remove('customstartingpath');
+    }
+}
 
 
 // This keeps a list of all elements sorted by their entry order into the DOM tree
@@ -768,4 +818,18 @@ function setElementIndexListIndexToElement(entry){
             return;
         }
     }
+}
+
+let startingPath;
+function makeCurrentPathStartingPath() {
+    startingPath = getCurrentPath();
+    localStorage.setItem(STARTING_PATH, JSON.stringify(startingPath));
+
+    updateHomeIcon();
+}
+
+function clearStartingPath() {
+    startingPath = null;
+    localStorage.removeItem(STARTING_PATH);
+    updateHomeIcon();
 }
