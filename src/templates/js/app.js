@@ -7,7 +7,8 @@ const TITLE = "Simple Tasks";
 const DELETE_ICON = "&#10060;";
 // const BACK_ARROW = "&#129120;";
 const BACK_ARROW = "../";
-const STARTING_PATH = 'StartingPath'
+const STARTING_PATH = 'StartingPath';
+const MENU_ICON = "&#8942;";
 
 // // Focus
 const FOCUS_INPUT_LINE = "input";
@@ -45,6 +46,7 @@ function init() {
     }
 
     createToolBar();
+    createMenu();
 
     window.onpopstate = function(event) {
         restorePath(event.state.path);
@@ -336,27 +338,68 @@ function createTitle() {
     const titleActionButton = document.createElement('div');
     titleActionButton.setAttribute('class', 'titleactionbutton');
 
-    // Add delete button
-    if (isAtRootLevel()) {
-        titleActionButton.innerHTML = "Logout";
-        titleActionButton.onclick = () => {
-            clearCredentials();
-            window.history.go();
-        }
-    } else {
-        // Create back button
-        titleActionButton.innerHTML = "Delete";
-
-        titleActionButton.onclick = () => {
-            const deleteExecuted = sendDelete(getCurrentPath(), currentSceneRoot.subTasks.length > 0);
-            if (deleteExecuted)
-                setPath(getParentPath());
-        }
-    }
+    titleActionButton.innerHTML = MENU_ICON;
+    titleActionButton.onclick = toggleMenu;
 
     titleBar.appendChild(titleActionButton);
 }
 
+function toggleMenu() {
+    if (menuscreen.style.display == 'none')
+        menuscreen.style.display = 'flex';
+    else
+        menuscreen.style.display = 'none';
+}
+
+function createMenu() {
+    menuscreen.style.display = 'none';
+    menubackgroundclicker.onclick = toggleMenu;
+
+    const buttons = [];
+    // buttons.push(["Name", () => {}]); // Template
+
+    if (DEBUG) {
+        /*
+        buttons.push(["Toogle debug", () => {
+            DEBUG = !DEBUG;
+            alert("Debug: " + DEBUG);
+        }]); // */
+
+        buttons.push(["Add rand entry", () => { addEntry("test"); }])
+        buttons.push(["Toggle global menu", () => {
+            if (globalToolbar.style.display == 'none')
+            globalToolbar.style.display = 'flex';
+            else
+            globalToolbar.style.display = 'none';
+        }])
+    }
+
+    buttons.push(["Delete current level", () => {
+        if (isAtRootLevel()) {
+            alert("Can't delete root level");
+            return;
+        }
+        const deleteExecuted = sendDelete(getCurrentPath(), currentSceneRoot.subTasks.length > 0);
+        if (deleteExecuted)
+            setPath(getParentPath());
+    }]);
+
+
+    buttons.push(["Logout", () => {
+        clearCredentials();
+        window.history.go();
+    }]);
+
+
+
+
+    for (let button of buttons) {
+        const buttonElement = document.createElement('button');
+        buttonElement.innerText = button[0];
+        buttonElement.onclick = button[1];
+        menu.appendChild(buttonElement);
+    }
+}
 
 function scrollTop() {
     contentContainer.scrollTop = 0;
@@ -462,8 +505,7 @@ function createToolBar() {
     addButtonsToToolbar(buttons, selectionToolbar);
 
     buttons = [];
-    // buttons.push("Add", () => {}) // Template
-    buttons.push(["Rand Entry", () => { addEntry("test"); }])
+    buttons.push(["Add", () => {alert("test")}]); // Template
 
     addButtonsToToolbar(buttons, globalToolbar);
     globalToolbar.style.display = 'none'

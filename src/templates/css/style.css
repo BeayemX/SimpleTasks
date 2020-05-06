@@ -179,13 +179,15 @@ body {
     margin-right:5;
 }
 .titleactionbutton {
-    flex: 0;
+    width: 25px;
     text-align: center;
+    padding: 7px;
 
+    /*
     border: 1px solid #ccc;
     border-radius: 10px;
+    */
 
-    padding: 7px;
 
     cursor: default;
 }
@@ -274,4 +276,40 @@ body {
     color: #fff;
     cursor: default;
     font-size: 0.8em;
+}
+
+#menuscreen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    display: flex;
+    display: none;
+}
+#menubackgroundclicker{
+    background-color: #0009;
+    width: 100%;
+    height: 100%
+}
+
+#menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+
+    display: block;
+    flex-direction: column;
+    height: 100%;
+    background-color: #333;
+    align-content: stretch;
+    padding: 20px;
+}
+
+#menu > button {
+    width: 100%;
+    padding: 5px;
+    font-size: 14pt;
+    margin-top: 25px;
 }

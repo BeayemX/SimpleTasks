@@ -1,4 +1,4 @@
-const DEBUG = false;
+let DEBUG = false;
 const FOLD_WHEN_STEPPING = false;
 const maxLength = 256; // Not used
 const LONG_PRESS_DURATION_MS = 500;
