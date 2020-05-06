@@ -702,7 +702,7 @@ function contentKeyDownHandler(e) {
     } else if (e.key == 'Delete') {
         currentlySelectedElement.delete(askForConfirmationForSubtasks = !e.shiftKey);
     } else if (e.key == 'Backspace') {
-        goBack();
+        goUp();
     } else if (e.key == 'c' && e.ctrlKey) {
         if (currentlySelectedElement)
             copySelectedEntry();
