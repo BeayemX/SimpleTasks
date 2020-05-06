@@ -159,8 +159,7 @@ function copySelectedEntry() {
 }
 
 function pasteEntry() {
-    if (currentlySelectedElement)
-        pasteIntoSelectedEntry = true;
+    let pasteIntoSelectedEntry = currentlySelectedElement != null;
 
     console.log("pasteEntry", pasteIntoSelectedEntry)
     sendPaste(pasteIntoSelectedEntry);
