@@ -495,7 +495,7 @@ function createToolBar() {
     let buttons = [];
     // buttons.push("Add", () => {}) // Template
     // buttons.push(["Enter", () => { currentlySelectedElement.enter(); }])
-    buttons.push(["Cut", () => { currentlySelectedElement.cut(); }])
+    buttons.push(["Cut", () => { cutSelectedEntry(); }])
     buttons.push(["Copy", () => { copySelectedEntry(); }])
     buttons.push(["Paste", () => { pasteEntry(); }])
     buttons.push(["Up", () => { currentlySelectedElement.moveEntry(-1); }])
