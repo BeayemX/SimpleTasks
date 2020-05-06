@@ -210,9 +210,8 @@ class Entry {
                 if (recursive) {
                     for (let subtask of this.subTasks)
                         subtask.fold(recursive);
-
-                    rebuildElementIndexList(true);
                 }
+                rebuildElementIndexList(true);
             }
         } else {
             this.subTasks[this.selectedIndex].unfold();
