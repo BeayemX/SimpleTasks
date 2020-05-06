@@ -150,7 +150,7 @@ class Entry {
      }
 
 
-     unfold = () => {
+     unfold = (recursive = false) => {
         if (this.selectedIndex == -1) {
 
             if (this.folded === false) { // Already unfolded
@@ -172,14 +172,19 @@ class Entry {
             } //*/
             //reassignIndices();
             this.subTasksElement.style.display = "flex";
-            if (this.element) // HACK to prevent this from being called while creating this entry itself
+            if (this.element) { // HACK to prevent this from being called while creating this entry itself
+                if (recursive) {
+                    for (let subtask of this.subTasks)
+                        subtask.unfold(recursive);
+                }
                 rebuildElementIndexList(true);
+            }
         } else {
             this.subTasks[this.selectedIndex].unfold();
         }
     }
 
-    fold = () => {
+    fold = (recursive) => {
         if (this.selectedIndex == -1) {
 
             if (this.folded === true) {
@@ -201,8 +206,14 @@ class Entry {
             //this.subTasks = []
             // reassignIndices();
             this.subTasksElement.style.display = "none";
-            if (this.element) // HACK to prevent this from being called while creating this entry itself
-                rebuildElementIndexList(true);
+            if (this.element) { // HACK to prevent this from being called while creating this entry itself
+                if (recursive) {
+                    for (let subtask of this.subTasks)
+                        subtask.fold(recursive);
+
+                    rebuildElementIndexList(true);
+                }
+            }
         } else {
             this.subTasks[this.selectedIndex].unfold();
         }
@@ -448,6 +459,37 @@ class Entry {
 
             subTasksCounterLabel.onclick = (e) => {
                 this.toggleFold();
+                e.stopPropagation();
+                return false;
+            }
+
+            subTasksCounterLabel.ontouchstart = (e) => {
+                this.subTasksTimeout = setTimeout(() => {
+                    // this.forceSelect(true);
+                    if (this.folded) {
+                        this.unfold(true);
+                    } else {
+                        this.fold(true);
+                    }
+                }, LONG_PRESS_DURATION_MS)
+            }
+
+            const cancelLongPress2 = (e) => {
+                if (this.subTasksTimeout){
+                    clearTimeout(this.subTasksTimeout);
+                    this.subTasksTimeout = null;
+                }
+            }
+            subTasksCounterLabel.ontouchend = cancelLongPress2;
+            subTasksCounterLabel.ontouchmove = cancelLongPress2;
+
+            subTasksCounterLabel.onselectstart = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            subTasksCounterLabel.oncontextmenu = (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 return false;
             }
