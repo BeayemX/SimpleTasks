@@ -732,7 +732,7 @@ function globalKeyDownHandler(e) {
             setFocus(FOCUS_TITLE);
             document.execCommand('selectAll', false, null);
         }
-    } else if (e.key == 'l' && e .ctrlKey) {
+    } else if (e.key == 'l' && e .ctrlKey && DEBUG) {
         console.clear();
         return false;
     } else if (e.key == 'F12') {
