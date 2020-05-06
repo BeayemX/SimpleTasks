@@ -828,7 +828,7 @@ let elementIndexListIndex = 0;
 function selectNextItemInElementIndexList(delta) {
     const newIndex = clamp(0, elementIndexList.length -1, elementIndexListIndex + delta)
 
-    if (elementIndexListIndex != newIndex)
+    if (elementIndexListIndex != newIndex || currentlySelectedElement != elementIndexList[newIndex])
         selectElementIndexListElementByIndex(newIndex);
 }
 
