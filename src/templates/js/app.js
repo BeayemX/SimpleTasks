@@ -701,8 +701,6 @@ function contentKeyDownHandler(e) {
         currentlySelectedElement.enter();
     } else if (e.key == 'Delete') {
         currentlySelectedElement.delete(askForConfirmationForSubtasks = !e.shiftKey);
-    } else if (e.key == 'Backspace') {
-        goUp();
     } else if (e.key == 'c' && e.ctrlKey) {
         if (currentlySelectedElement)
             copySelectedEntry();
@@ -729,6 +727,8 @@ function globalKeyDownHandler(e) {
         else
             setFocus(FOCUS_CONTENT)
         return false;
+    } else if (e.key == 'Backspace') {
+        goUp();
     } else if (e.key == 'F2') {
         if (!isAtRootLevel()) {
             //deselectEntries();
