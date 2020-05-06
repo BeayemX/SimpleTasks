@@ -642,12 +642,15 @@ function titleKeyDownHandler(e) {
 function contentKeyDownHandler(e) {
     if (e.key == 'ArrowLeft' && e.altKey == false) {
         // currentlySelectedElement.fold();
-        currentlySelectedElement.stepOut();
+        if (currentlySelectedElement)
+            currentlySelectedElement.stepOut();
     } else if (e.key == 'ArrowRight' && e.altKey == false) {
         //currentlySelectedElement.unfold();
-        currentlySelectedElement.stepInto();
+        if (currentlySelectedElement)
+            currentlySelectedElement.stepInto();
     } else if (e.key == ' ') {
-        currentlySelectedElement.toggleFold();
+        if (currentlySelectedElement)
+            currentlySelectedElement.toggleFold();
     } else if (e.key == 'ArrowUp') {
         if (e.altKey) {
             if (currentlySelectedElement) {
@@ -698,9 +701,11 @@ function contentKeyDownHandler(e) {
             }
         }
     } else if (e.key == 'Enter') {
-        currentlySelectedElement.enter();
+        if (currentlySelectedElement)
+            currentlySelectedElement.enter();
     } else if (e.key == 'Delete') {
-        currentlySelectedElement.delete(askForConfirmationForSubtasks = !e.shiftKey);
+        if (currentlySelectedElement)
+            currentlySelectedElement.delete(askForConfirmationForSubtasks = !e.shiftKey);
     } else if (e.key == 'c' && e.ctrlKey) {
         if (currentlySelectedElement)
             copySelectedEntry();
