@@ -293,7 +293,7 @@ function createTitle() {
     }//*/
 
     // Create title text
-    let titleObject = document.createElement('div');
+    titleObject = document.createElement('div');
     titleObject.setAttribute('class', 'title');
     if (!isAtRootLevel()) {
         titleObject.setAttribute('contenteditable', true);
