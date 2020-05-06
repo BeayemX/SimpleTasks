@@ -703,6 +703,8 @@ function contentKeyDownHandler(e) {
     } else if (e.key == 'Enter') {
         if (currentlySelectedElement)
             currentlySelectedElement.enter();
+    } else if (e.key == 'Backspace') {
+        goUp();
     } else if (e.key == 'Delete') {
         if (currentlySelectedElement)
             currentlySelectedElement.delete(askForConfirmationForSubtasks = !e.shiftKey);
@@ -732,8 +734,6 @@ function globalKeyDownHandler(e) {
         else
             setFocus(FOCUS_CONTENT)
         return false;
-    } else if (e.key == 'Backspace') {
-        goUp();
     } else if (e.key == 'F2') {
         if (!isAtRootLevel()) {
             //deselectEntries();
