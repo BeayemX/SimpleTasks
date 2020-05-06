@@ -441,10 +441,15 @@ function sendRename(oldName, newName) {
 function sendPaste(pasteIntoSelectedEntry) {
     if (!copyData['data'])
         return
-    let pastePath = currentlySelectedElement.getElementPath(); // Paste into selected object
-    if (!pasteIntoSelectedEntry) {
-        pastePath.pop(); // Paste next to selected object
+    let pastePath;
+    if (currentlySelectedElement) {
+        pastePath = currentlySelectedElement.getElementPath(); // Paste into selected object
+        if (!pasteIntoSelectedEntry) {
+            pastePath.pop(); // Paste next to selected object
+        }
     }
+    else
+        pastePath = getCurrentPath();
 
     const sendData = {
         'action': 'paste_data',
