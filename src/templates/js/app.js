@@ -1036,12 +1036,12 @@ function setTheme() {
     const sideIconsBar = "#202225";
     let sideAreaBottomBar = "#292b2f";
     const sideArea = "#2f3136";
-    let contentBG = "#36393f";
-    contentBG = "#0000001a";
+    const contentBG = "#36393f";
+    const subEntries = "#0000001a";
     const textInput = "#40444b";
     const selectedColor = '#398513ff';
 
-    document.querySelector('body').style.backgroundColor = sideIconsBar;
+    document.querySelector('body').style.backgroundColor = contentBG;
     document.querySelector('#titleBar').style.backgroundColor = sideAreaBottomBar;
 
     for (let entryWrapper of document.querySelectorAll('.entryWrapper')){
@@ -1050,7 +1050,7 @@ function setTheme() {
     }
 
     for (let subEntryWrapper of document.querySelectorAll('.entryWrapper .entryWrapper'))
-        subEntryWrapper.style.backgroundColor = contentBG;
+        subEntryWrapper.style.backgroundColor = subEntries;
 
     const selected = document.querySelector('.entryWrapper.focused');
     if (selected)
