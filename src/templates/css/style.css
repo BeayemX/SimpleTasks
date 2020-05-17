@@ -47,6 +47,7 @@ body {
     background-color: #ccc;
     min-width: 0;
     border: 0;
+    color: #ddd;
 }
 
 #inputLine div {
