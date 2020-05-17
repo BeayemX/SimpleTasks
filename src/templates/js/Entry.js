@@ -106,6 +106,7 @@ class Entry {
 
         setFocus(FOCUS_CONTENT);
         showToolbar();
+        setTheme();
     };
 
     setSelected = (subtask) => {

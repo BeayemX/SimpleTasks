@@ -89,6 +89,7 @@ function init() {
 
 function afterInitialDataLoaded() {
     setupStartingPath();
+    setTheme();
 }
 
 function setupStartingPath() {
@@ -887,6 +888,7 @@ function rebuildElementIndexList(keepCounter) {
 
     work(currentSceneRootEntry);
     elementIndexList.shift(); // remove first element (root element)
+    setTheme(); // HACK to also apply styles to newly created elements...
 }
 
 function setElementIndexListIndexToElement(entry){
@@ -1027,4 +1029,35 @@ function move_entry_response(entryID, delta, success) {
 
         entryElement.select(); // Required, without this, the newly rebuilt selection index will not be used
     }
+}
+
+function setTheme() {
+    const simpleTasksGreen = "#398513ff";
+    const sideIconsBar = "#202225";
+    let sideAreaBottomBar = "#292b2f";
+    const sideArea = "#2f3136";
+    let contentBG = "#36393f";
+    contentBG = "#0003";
+    const textInput = "#40444b";
+    const selectedColor = '#398513ff';
+
+    document.querySelector('body').style.backgroundColor = sideIconsBar;
+    document.querySelector('#titleBar').style.backgroundColor = sideAreaBottomBar;
+
+    for (let entryWrapper of document.querySelectorAll('.entryWrapper')){
+        entryWrapper.style.backgroundColor = sideArea;
+        entryWrapper.style.borderColor = sideArea;
+    }
+
+    for (let subEntryWrapper of document.querySelectorAll('.entryWrapper .entryWrapper'))
+        subEntryWrapper.style.backgroundColor = contentBG;
+
+    const selected = document.querySelector('.entryWrapper.focused');
+    if (selected)
+        selected.style.backgroundColor = selectedColor;
+
+    document.querySelector('#inputLine').style.backgroundColor = sideAreaBottomBar;
+    document.querySelector('#inputLine input').style.backgroundColor = textInput;
+    document.querySelector('#inputLine div button').style.backgroundColor = textInput;
+
 }
