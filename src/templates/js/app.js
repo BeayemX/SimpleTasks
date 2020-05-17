@@ -1037,7 +1037,7 @@ function setTheme() {
     let sideAreaBottomBar = "#292b2f";
     const sideArea = "#2f3136";
     let contentBG = "#36393f";
-    contentBG = "#0003";
+    contentBG = "#0000001a";
     const textInput = "#40444b";
     const selectedColor = '#398513ff';
 
