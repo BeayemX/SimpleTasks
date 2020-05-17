@@ -41,19 +41,19 @@ def import_json(user_name, json_string):
         for key, child_data in data.items():
             new_id = database_add_entry(user_name, parent_id, key)
             if (new_id):
-                print(f"ADDED\t{parent_id}\t --> \t'{key}'")
+                print(f"    ADDED\t{parent_id}\t --> \t'{key}'")
                 work(new_id, child_data)
 
     work(ROOT_ID, imported_data)
 
-if __name__ == "__main__":
-    args = sys.argv
-    if len(args) < 2:
-        print("This script requires exactly 1 argument, namely the username of the new user")
-        sys.exit(-1)
+def cli_add_user():
+    if len(sys.argv) < 3:
+        print("Missing user names to create")
+        return
 
-    for user_name in args[1:]:
+    user_list = sys.argv[2:]
 
+    for user_name in user_list:
         new_user_id = add_user(user_name)
 
         if new_user_id:
@@ -63,3 +63,31 @@ if __name__ == "__main__":
 
         else:
             print(f"User '{user_name}' already exists")
+
+def cli_import_json():
+    try:
+        json_file = sys.argv[2]
+        print(f"Importing {json_file}")
+
+        with open(sys.argv[2]) as f:
+            data = f.read()
+            import_json(json_file.replace('.json'), data)
+    except IndexError:
+        print("The json file name is missing!")
+    except FileNotFoundError:
+        print("The file does not exist!")
+
+if __name__ == "__main__":
+    actions = {
+        'adduser': cli_add_user,
+        'import': cli_import_json,
+    }
+
+    if len(sys.argv) < 2:
+        print("Action missing. Possible actions are:")
+        for key in actions:
+            print(f"  {key}")
+        sys.exit(-1)
+
+    action_name = sys.argv[1]
+    actions[action_name]()
