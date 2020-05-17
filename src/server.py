@@ -8,7 +8,6 @@ import json
 from flask import Flask, render_template
 
 ADDRESS = 'localhost'
-ADDRESS = '192.168.1.231'
 PORT = 8192
 DEBUG = True
 
