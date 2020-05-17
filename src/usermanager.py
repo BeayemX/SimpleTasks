@@ -71,7 +71,7 @@ def cli_import_json():
 
         with open(sys.argv[2]) as f:
             data = f.read()
-            import_json(json_file.replace('.json'), data)
+            import_json(json_file.replace('.json', ''), data)
     except IndexError:
         print("The json file name is missing!")
     except FileNotFoundError:
