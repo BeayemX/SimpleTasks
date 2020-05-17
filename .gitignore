@@ -1,1 +1,3 @@
 DataStorage
+__pycache__
+*.db

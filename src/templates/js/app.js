@@ -7,37 +7,61 @@ const TITLE = "Simple Tasks";
 const DELETE_ICON = "&#10060;";
 // const BACK_ARROW = "&#129120;";
 const BACK_ARROW = "../";
-const STARTING_PATH = 'StartingPath';
+const STARTING_ENTRY_ID = 'StartingEntryID';
 const MENU_ICON = "&#8942;";
 
 // // Focus
 const FOCUS_INPUT_LINE = "input";
 const FOCUS_TITLE = "title";
 const FOCUS_CONTENT = "content";
+const FOCUS_EDIT_ENTRY_TEXT = "entry";
 
 // Members
-let _currentPath = [];
-let historyIndex = 0; // TODO remove occurences? Needed for slicing? could .lenght be used?
-
 let data = {};
-let selectedEntryIndex = 0; // TODO remove all occurences
-let previousSelectedEntryIndex = -1; // TODO move into entry class?
+let currentSceneRootEntry;
+
+// // Element list workaround
+const USE_ELEMENT_LIST_WORKAROUND = true;
+let elementIndexList = [];
+let elementIndexListIndex = 0;
+
+// // Starting path
+let startingEntryID;
+let jumpIntoNewlyCreatedEntry = false;
 
 // // Focus
 let currentFocus = FOCUS_CONTENT;
 let currentlySelectedElement = null;
 
-
 // // Editable
 let titleObject;
 let input;
 
-// Do after network-update
-let pathToEnterWhenReceivingServerUpdate = null;
-let selectedIndexAfterUpdate = -1; // TODO move to entry class?
 let initialized = false;
-
 let isMobileAgent = false;
+
+// // Node IDs / Navigation
+const ROOT_ID = "root"
+let topLevelID = ROOT_ID;
+
+// // Clipboard
+const CLIPBOARD_TYPE_CUT = "cut";
+const CLIPBOARD_TYPE_COPY = "copy"; // Will not be used.
+const CLIPBOARD_TYPE_EMPTY = "empty";
+
+let clipboard = {
+    "entry_id": -1,
+    "type": CLIPBOARD_TYPE_EMPTY
+}
+
+// // Input
+const keyHandlers = {}; // Is filled in index.html
+
+// Caching
+// // Easier Access
+let entriesByID = {};
+let elementsByID = {};
+
 
 function init() {
     if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
@@ -49,59 +73,104 @@ function init() {
     createMenu();
 
     window.onpopstate = function(event) {
-        restorePath(event.state.path);
+        const state = event.state;
+        if (state) {
+            const theID = event.state.topLevelID
+            if (theID){
+                restoreHistory(theID);
+            }
+        } else {
+            console.log("No history!")
+        }
     }
 
-    startingPath = localStorage.getItem(STARTING_PATH);
+    initialized = true;
+}
 
-    if (startingPath) {
-        startingPath = JSON.parse(startingPath);
+function afterInitialDataLoaded() {
+    setupStartingPath();
+}
 
-        if (dataPathDoesExists(startingPath)) {
-            _currentPath = startingPath;
+function setupStartingPath() {
+    let savedStartingEntryID = localStorage.getItem(STARTING_ENTRY_ID);
+    startingEntryID = topLevelID;
+
+    if (savedStartingEntryID) {
+        if (entryDoesExist(savedStartingEntryID)) {
+            startingEntryID = savedStartingEntryID;
         } else {
             clearStartingPath();
         }
     }
 
-    initialized = true;
-    setPath(_currentPath);
+    // setPath(_currentPath);
+    // setCurrentTopLevel(topLevelID);
+
+    setCurrentTopLevel(startingEntryID);
 }
 
-function dataPathDoesExists(path) {
-    if (accessPathData(path)) {
-        return true;
-    } else {
-        return false;
-    }
+function entryDoesExist(entryID) {
+    return getElementByID(entryID) !== undefined;
 }
 
 // // // // // //
 // Data Access //
 // // // // // //
 
-function setDataComingFromServer(newData) {
-    console.log("Setting data from server")
-    data = newData;
+function getDataByID(entryID) {
+    return entriesByID[entryID];
+}
+function getElementByID(entryID) {
+    return elementsByID[entryID];
 }
 
-function getCurrentPath() {
-    let path = [];
-    let sliceStart = 0;
-    path = path.concat(_currentPath.slice(sliceStart, historyIndex));
+function setDataComingFromServer(newData) {
+    console.log("Setting data from server");
+    console.log(newData);
 
-    path = []
-    for (let part of _currentPath.slice(sliceStart, historyIndex))
-    {
-        if (part) // HACK necessary for root element, because it has no parent and it causes the first value of the _currentPath to be 'undefined'
-            path.push(part)
+    data = newData;
+
+    entriesByID[data['id']] = data;
+
+    function iterate(parentEntryData) {
+        entriesByID[parentEntryData.id] = parentEntryData;
+        for (let entry of parentEntryData['entries']) {
+            iterate(entry);
+        }
     }
 
-    return path;
+    iterate(data);
+}
+
+function restoreHistory(entryID){
+    setCurrentTopLevel(entryID, false);
+}
+
+function setCurrentTopLevel(newTopLevelID, writeHistory = true) {
+    topLevelID = newTopLevelID;
+
+    if (writeHistory) {
+        console.log("set history", getDataByID(topLevelID)['text'])
+        window.history.pushState({
+            "topLevelID": topLevelID
+        }, getDataByID(topLevelID)['text'], "")
+    }
+
+    _createEverything(getDataByID(topLevelID))
+
+    // Start subtask-container visible, if there are no entries yet.
+    // This prevents a bug when entering entry without sub-entries and then adding subentries,
+    // where subentries would not show up (sub-entry container would have style.display=none)
+    if (currentSceneRootEntry.subTasks.length == 0) {
+        currentSceneRootEntry.unfold();
+    }
+}
+function getCurrentTopLevelID() {
+    return topLevelID;
 }
 
 function getCurrentData() {
-    return accessPathData(getCurrentPath())
+    return accessPathData(getCurrentTopLevelID())
 }
 
 function getParentPath() {
@@ -110,8 +179,9 @@ function getParentPath() {
     return parentPath;
 }
 
-function accessPathData(path)
+function accessPathData(entryID)
 {
+    return getDataByID(entryID)
     let tmpData = data;
     for (let pathElement of path){
         tmpData = tmpData[pathElement];
@@ -119,19 +189,8 @@ function accessPathData(path)
     return tmpData;
 }
 
-function copyPath(path) {
-    let newPath = []
-
-    for (let part of path) {
-        if (part) // HACK necessary for root element, because it has no parent and it causes the first value of the _currentPath to be 'undefined'
-            newPath.push(part);
-    }
-
-    return newPath;
-}
-
 function copyCurrentPath() {
-    return copyPath(getCurrentPath());
+    return copyPath(getCurrentTopLevelID());
 }
 
 // // // // // // //
@@ -141,67 +200,65 @@ function copyCurrentPath() {
 function reparentEntry() {
 }
 
-let copyData = {
-    'name': '',
-    'data': ''
-};
-let cutData = {
-    'execute_cut': false,
-    'path': ""
-};
-
-function copySelectedEntry() {
-    copyData.name = currentlySelectedElement.name;
-    copyData.data = currentlySelectedElement.data;
-
-    cutData.execute_cut = false;
-    cutData.path = "";
-}
-
-function pasteEntry() {
-    let pasteIntoSelectedEntry = currentlySelectedElement != null;
-
-    console.log("pasteEntry", pasteIntoSelectedEntry)
-    sendPaste(pasteIntoSelectedEntry);
-
-    if (cutData.execute_cut)  {
-        copyData.name = "";
-        copyData.data = "";
+function clearCut() {
+    if (clipboard.type == CLIPBOARD_TYPE_CUT) { // there is already an element marked for cutting
+        getElementByID(clipboard.entry_id).unmarkCut();
     }
 }
 
 function cutSelectedEntry() {
-    copySelectedEntry();
-    cutData.execute_cut = true;
-    cutData.path = getCurrentPath();
+    if (currentlySelectedElement) {
+        clearCut();
+
+        clipboard.entry_id = currentlySelectedElement.entry_id;
+        clipboard.type = CLIPBOARD_TYPE_CUT;
+        currentlySelectedElement.markCut();
+    }
 }
+/*
+function copySelectedEntry() {
+    if (currentlySelectedElement) {
+        clearCut();
+        clipboard.entry_id = currentlySelectedElement.entry_id;
+        clipboard.type = CLIPBOARD_TYPE_COPY;
+    }
+} // */
+
+function pasteEntry() {
+    if (clipboard.type == CLIPBOARD_TYPE_EMPTY)
+        return;
+
+    // Find paste target
+    let pasteID;
+    if (currentlySelectedElement)
+        pasteID = currentlySelectedElement.entry_id;
+    else
+        pasteID = currentSceneRootEntry.entry_id;
+
+    // Prevent cut-pasting into itself
+    if (clipboard.type == CLIPBOARD_TYPE_CUT) {
+        if (pasteID == clipboard.entry_id)
+            return;
+    }
+
+    // Execute paste on server
+    sendPaste(pasteID);
+}
+
 
 // // // // // // //
 // User Interface //
 // // // // // // //
 function updateDisplayedData() {
-    if (!initialized)
+    const tmpInit = initialized;
+    if (!tmpInit)
         init();
 
     _createEverything(getCurrentData());
-
-    if (pathToEnterWhenReceivingServerUpdate) {
-        const tmpPath = pathToEnterWhenReceivingServerUpdate; // Prevent endless recursion
-        pathToEnterWhenReceivingServerUpdate = null;
-
-        setPath(tmpPath);
-    }
-
     rebuildElementIndexList();
 
-    if (selectedIndexAfterUpdate >= 0) {
-        // currentlySelectedElement.selectEntryWithIndex(selectedIndexAfterUpdate);
-        elementIndexListIndex = selectedIndexAfterUpdate;
-        selectElementIndexListElementByIndex(selectedIndexAfterUpdate);
-
-        selectedIndexAfterUpdate = -1;
-    }
-
+    if (!tmpInit)
+        afterInitialDataLoaded();
 }
 
 function addEntryFromInput(jumpInto) {
@@ -215,8 +272,7 @@ function addEntryFromInput(jumpInto) {
     input.value = '';
 
     if (jumpInto) {
-        pathToEnterWhenReceivingServerUpdate = copyCurrentPath()
-        pathToEnterWhenReceivingServerUpdate.push(newEntryText);
+        jumpIntoNewlyCreatedEntry = true;
     }
 
     addEntry(newEntryText);
@@ -231,7 +287,7 @@ function createInputLine() {
     homebutton.appendChild(icon);
 
     homebutton.onclick = () => {  // TODO use long press?
-        if (startingPath)
+        if (startingEntryID == getCurrentTopLevelID())
             clearStartingPath();
         else
             makeCurrentPathStartingPath();
@@ -265,13 +321,19 @@ function createInputLine() {
 }
 
 function getTitle() {
-    let currPath = getCurrentPath();
+    return getDataByID(getCurrentTopLevelID())['text'];
+    let currPath = getCurrentTopLevelID();
     let actualTitle = currPath[currPath.length -1];
     return actualTitle
 }
 
 function isAtRootLevel() {
-    return historyIndex == 0;
+    const topLevelEntry = getElementByID(getCurrentTopLevelID());
+
+    if (topLevelEntry)
+        return topLevelEntry.parentID == null;
+
+    return true;
 }
 
 function createTitle() {
@@ -329,7 +391,7 @@ function createTitle() {
         if (!titleObject.innerText) {
             titleObject.innerText = titleObject.originalText;
         } else {
-            sendRename(titleObject.originalText, titleObject.innerText);
+            sendRename(getCurrentTopLevelID(), titleObject.innerText);
         }
     }
     titleBar.appendChild(titleObject);
@@ -378,9 +440,11 @@ function createMenu() {
             alert("Can't delete root level");
             return;
         }
-        const deleteExecuted = sendDelete(getCurrentPath(), currentSceneRoot.subTasks.length > 0);
-        if (deleteExecuted)
-            setPath(getParentPath());
+        sendDelete(getCurrentTopLevelID(), currentSceneRootEntry.subTasks.length > 0);
+    }]);
+
+    buttons.push(["Paste on current top level", () => {
+        sendPaste(getCurrentTopLevelID());
     }]);
 
 
@@ -388,8 +452,6 @@ function createMenu() {
         clearCredentials();
         window.history.go();
     }]);
-
-
 
 
     for (let button of buttons) {
@@ -417,58 +479,41 @@ function scrollView(delta) {
  function addEntry(text){
     const sendData = {
         'action': 'add_entry',
-        'path': getCurrentPath(),
+        'parent_id': getCurrentSelectedEntryID(),
         'text': text
     }
+    console.log("sendData")
+    console.log(sendData)
     send(sendData);
 }
 
-function sendRename(oldName, newName) {
-    const path = copyCurrentPath();
-    path.pop();
-
+function sendRename(entryID, newName) {
     send({
-        'action': 'rename_entry',
-        'path': path,
-        'old': oldName,
-        'new': newName
+        'action': 'change_text',
+        'entry_id': entryID,
+        'text': newName
     })
-
-    pathToEnterWhenReceivingServerUpdate = path;
-    pathToEnterWhenReceivingServerUpdate.push(newName)
 }
 
-function sendPaste(pasteIntoSelectedEntry) {
-    if (!copyData['data'])
-        return
-    let pastePath;
-    if (currentlySelectedElement) {
-        pastePath = currentlySelectedElement.getElementPath(); // Paste into selected object
-        if (!pasteIntoSelectedEntry) {
-            pastePath.pop(); // Paste next to selected object
-        }
-    }
-    else
-        pastePath = getCurrentPath();
-
+function sendPaste(targetPasteID) {
     const sendData = {
-        'action': 'paste_data',
-        'path': pastePath,
-        'data': copyData,
-        'cut_data': cutData
+        'action': 'paste_entry',
+        'target_id': targetPasteID,
+        'entry_id': clipboard.entry_id,
+        'type': clipboard.type
     }
     send(sendData);
 }
 
-function sendDelete(deletePath, askConfirmation) {
+function sendDelete(entryID, askConfirmation) {
     if (askConfirmation) {
-        if (!confirm("There are sub-tasks, do you really want to delete this?"))
+        if (!confirm("There are sub-tasks, do you really want to delete this? (" + entryID + ")"))
             return false;
     }
 
     send({
         'action': 'delete_entry',
-        'path': deletePath
+        'entry_id': entryID
     })
 
     return true;
@@ -499,12 +544,12 @@ function createToolBar() {
     let buttons = [];
     // buttons.push("Add", () => {}) // Template
     // buttons.push(["Enter", () => { currentlySelectedElement.enter(); }])
+    buttons.push(["Delete", () => { currentlySelectedElement.delete(); }])
     buttons.push(["Cut", () => { cutSelectedEntry(); }])
-    buttons.push(["Copy", () => { copySelectedEntry(); }])
+    // buttons.push(["Copy", () => { copySelectedEntry(); }])
     buttons.push(["Paste", () => { pasteEntry(); }])
-    buttons.push(["Up", () => { currentlySelectedElement.moveEntry(-1); }])
-    buttons.push(["Down", () => { currentlySelectedElement.moveEntry(1); }])
-    // buttons.push(["Delete", () => { currentlySelectedElement.delete(); }])
+    buttons.push(["Down", () => { sendMoveEntry(currentlySelectedElement.entry_id, 1); }])
+    buttons.push(["Up", () => { sendMoveEntry(currentlySelectedElement.entry_id, -1); }])
 
     addButtonsToToolbar(buttons, selectionToolbar);
 
@@ -518,8 +563,16 @@ function createToolBar() {
     toolbarDefaultStyleDisplay = selectionToolbar.style.display;
 }
 
+function sendMoveEntry(entryID, delta){
+    send({
+        "action": 'move_entry',
+        "entry_id": entryID,
+        "delta": delta
+    })
+}
+
 function showToolbar(value = true) {
-    if (value)
+    if (value && isMobileAgent)
         selectionToolbar.style.display = toolbarDefaultStyleDisplay;
     else
         selectionToolbar.style.display = "none";
@@ -529,42 +582,12 @@ function showToolbar(value = true) {
 // // // // // // // // // //
 // Path and History Stuff  //
 // // // // // // // // // //
-function restorePath(path) {
-    _currentPath = path;
-    historyIndex = _currentPath.length;
-    updateDisplayedData();
-}
-
-function setPath(path) {
-    restorePath(path);
-
-    window.history.pushState({
-        "path": _currentPath
-    }, _currentPath.join("/"), "")
-}
-
-function changeHistory(delta) {
-    const originalHistoryIndex = historyIndex;
-    historyIndex = clamp(0, _currentPath.length, historyIndex + delta);
-
-    if (originalHistoryIndex != historyIndex) {
-        updateDisplayedData();
-    }
-}
 
 function goUp() {
-    changeHistory(-1);
+    if (currentSceneRootEntry.parentID) {
+        setCurrentTopLevel(currentSceneRootEntry.parentID);
+    }
 }
-/*
-function goBack() {
-    //changeHistory(-1);
-    window.history.back();
-}
-
-function goForward() {
-    window.history.forward();
-}
-*/
 
 // // // // // //
 // Input Focus //
@@ -582,8 +605,8 @@ function setFocus(focus) {
 
     if (oldFocus == FOCUS_CONTENT) {
         if (currentlySelectedElement){
-            currentlySelectedElement.deselect();
-            elementIndexListIndex = -1;
+            //currentlySelectedElement.deselect();
+            //elementIndexListIndex = -1;
         }
     }
     else if (oldFocus == FOCUS_TITLE)
@@ -593,12 +616,6 @@ function setFocus(focus) {
         input.focus();
     } else if (currentFocus == FOCUS_CONTENT) {
         contentContainer.focus();
-        if (USE_ELEMENT_LIST_WORKAROUND) {
-        } else {
-            if (previousSelectedEntryIndex >= 0) {
-                currentlySelectedElement.selectEntryWithIndex(previousSelectedEntryIndex);
-            }
-        }
     } else if (currentFocus == FOCUS_TITLE) {
         titleObject.focus();
     }
@@ -607,7 +624,6 @@ function setFocus(focus) {
 // // // // // // // //
 // Keyboard Handler  //
 // // // // // // // //
-const keyHandlers = {};
 
 function inputLineKeyDownHandler(e) {
     if (e.key == 'ArrowUp') {
@@ -623,8 +639,27 @@ function inputLineKeyDownHandler(e) {
             currentlySelectedElement.selectEntryWithIndex(0);
 
         return false;
+    } else if (e.key == 'Escape') {
+        setFocus(FOCUS_CONTENT);
+        return false;
     }
     return true;
+}
+
+function entryKeyDownHandler(e) {
+    if (e.key == 'Escape') {
+        if (currentlySelectedElement) {
+            currentlySelectedElement.resetTextChanges();
+            setFocus(null);
+        }
+    } else if (e.key == 'Enter') {
+        currentlySelectedElement.updateTextOnServer();
+        setFocus(null);
+    } else {
+        return true;
+    }
+
+    return false;
 }
 
 function titleKeyDownHandler(e) {
@@ -636,9 +671,9 @@ function titleKeyDownHandler(e) {
     } else {
         return true;
     }
-
     return false;
 }
+
 function contentKeyDownHandler(e) {
     if (e.key == 'ArrowLeft' && e.altKey == false) {
         // currentlySelectedElement.fold();
@@ -654,8 +689,7 @@ function contentKeyDownHandler(e) {
     } else if (e.key == 'ArrowUp') {
         if (e.altKey) {
             if (currentlySelectedElement) {
-                selectedIndexAfterUpdate = Math.max(0, elementIndexListIndex -1);
-                currentlySelectedElement.moveEntry(-1);
+                sendMoveEntry(currentlySelectedElement.entry_id, -1)
             }
         } else if (e.ctrlKey) {
             scrollView(-1);
@@ -668,8 +702,7 @@ function contentKeyDownHandler(e) {
     } else if (e.key == 'ArrowDown') {
         if (e.altKey) {
             if (currentlySelectedElement) {
-                selectedIndexAfterUpdate = Math.min(elementIndexList.length - 1, elementIndexListIndex + 1);
-                currentlySelectedElement.moveEntry(1);
+                sendMoveEntry(currentlySelectedElement.entry_id, +1)
             }
         } else if (e.ctrlKey) {
             scrollView(1)
@@ -700,6 +733,11 @@ function contentKeyDownHandler(e) {
                 currentlySelectedElement.selectEntryWithIndex(currentlySelectedElement.subTasks.length - 1);
             }
         }
+    } else if (e.key == 'Escape') {
+        if (currentlySelectedElement) {
+            // elementIndexListIndex = -1;
+            currentSceneRootEntry.select();
+        }
     } else if (e.key == 'Enter') {
         if (currentlySelectedElement)
             currentlySelectedElement.enter();
@@ -708,10 +746,10 @@ function contentKeyDownHandler(e) {
     } else if (e.key == 'Delete') {
         if (currentlySelectedElement)
             currentlySelectedElement.delete(askForConfirmationForSubtasks = !e.shiftKey);
-    } else if (e.key == 'c' && e.ctrlKey) {
+    } /*else if (e.key == 'c' && e.ctrlKey) {
         if (currentlySelectedElement)
             copySelectedEntry();
-    } else if (e.key.toLowerCase() == 'v' && e.ctrlKey) {
+    } */ else if (e.key.toLowerCase() == 'v' && e.ctrlKey) {
         pasteEntry();
     } else if (e.key == 'x' && e.ctrlKey) {
         if (currentlySelectedElement)
@@ -735,13 +773,17 @@ function globalKeyDownHandler(e) {
             setFocus(FOCUS_CONTENT)
         return false;
     } else if (e.key == 'F2') {
-        if (!isAtRootLevel()) {
-            //deselectEntries();
-
-            setFocus(FOCUS_TITLE);
-            document.execCommand('selectAll', false, null);
+        if (currentlySelectedElement) {
+            setFocus(FOCUS_EDIT_ENTRY_TEXT);
+            currentlySelectedElement.makeEditable();
+            // document.execCommand('selectAll', false, null);
+        } else {
+            if (!isAtRootLevel()) {
+                setFocus(FOCUS_TITLE);
+                document.execCommand('selectAll', false, null);
+            }
         }
-    } else if (e.key == 'l' && e .ctrlKey && DEBUG) {
+    } else if (e.key == 'l' && e .ctrlKey) { //  && DEBUG) {
         console.clear();
         return false;
     } else if (e.key == 'F12') {
@@ -774,50 +816,40 @@ function clamp(min, max, value) {
 function find(text) {
 }
 
-
-
-
-
-
-
-
-
-
-
-
-let currentSceneRoot;
 // Treat root level just like any other entry to unify workflow for top-level entries with subtasks
 function _createEverything(contentData) {
     contentContainer.innerText = "";
+    elementsByID = {};
 
     createTitle();
 
-    let parPath = getCurrentPath();
-    if (parPath)
-        parPath.pop();
-    console.log("Create everything for path", getCurrentPath())
+    console.log("Create everything for", getCurrentTopLevelID())
 
-    currentSceneRoot = new Entry(
-        entryName = getTitle(),
+    currentSceneRootEntry = new Entry(
         entryData = contentData,
-        parentElement = null,
         parentContainer = null,
-        parentPath = parPath,
         subtasksContainer = contentContainer
     );
-    currentlySelectedElement = currentSceneRoot
+
+    currentlySelectedElement = currentSceneRootEntry
 
     currentlySelectedElement.stepInto();
     currentlySelectedElement.deselect();
 
     updateHomeIcon();
+
+    if (clipboard.type == CLIPBOARD_TYPE_CUT) {
+        const cuttingElement = getElementByID(clipboard.entry_id);
+        if (cuttingElement)
+            cuttingElement.markCut();
+    }
 }
 
 function updateHomeIcon() {
-    if (startingPath){
-        document.querySelector('#homebutton').classList.add('customstartingpath');
-    } else {
+    if (startingEntryID === ROOT_ID){
         document.querySelector('#homebutton').classList.remove('customstartingpath');
+    } else {
+        document.querySelector('#homebutton').classList.add('customstartingpath');
     }
 }
 
@@ -825,11 +857,6 @@ function updateHomeIcon() {
 // This keeps a list of all elements sorted by their entry order into the DOM tree
 // TODO Maybe it would be better to make it work without this.
 // Entry-class should handle all the logic
-const USE_ELEMENT_LIST_WORKAROUND = true;
-
-let elementIndexList = [];
-let elementIndexListIndex = 0;
-
 function selectNextItemInElementIndexList(delta) {
     const newIndex = clamp(0, elementIndexList.length -1, elementIndexListIndex + delta)
 
@@ -848,17 +875,17 @@ function rebuildElementIndexList(keepCounter) {
     if (!keepCounter)
         elementIndexListIndex = 0;
 
-    function work(node) {
-        elementIndexList.push(node);
+    function work(entry) {
+        elementIndexList.push(entry);
 
-        if (!node.folded && node.subTasks.length > 0) {
-            for (let subnode of node.subTasks) {
-                work(subnode);
+        if (!entry.folded && entry.subTasks.length > 0) {
+            for (let subtask of entry.subTasks) {
+                work(subtask);
             }
         }
     }
 
-    work(currentSceneRoot);
+    work(currentSceneRootEntry);
     elementIndexList.shift(); // remove first element (root element)
 }
 
@@ -871,16 +898,133 @@ function setElementIndexListIndexToElement(entry){
     }
 }
 
-let startingPath;
 function makeCurrentPathStartingPath() {
-    startingPath = getCurrentPath();
-    localStorage.setItem(STARTING_PATH, JSON.stringify(startingPath));
+    startingEntryID = getCurrentTopLevelID()
+    localStorage.setItem(STARTING_ENTRY_ID, startingEntryID);
 
     updateHomeIcon();
 }
 
 function clearStartingPath() {
-    startingPath = null;
-    localStorage.removeItem(STARTING_PATH);
+    startingEntryID = ROOT_ID;
+    localStorage.removeItem(STARTING_ENTRY_ID);
+
     updateHomeIcon();
+}
+
+function getCurrentSelectedEntryID() {
+    if (currentlySelectedElement) {
+        return currentlySelectedElement.entry_id;
+    }
+    return currentSceneRootEntry.entry_id;
+}
+
+// Actions on server successful
+function addingEntrySuccessful(newEntryData) {
+    const entryID = newEntryData['id'];
+    const parentID = newEntryData['parent_id'];
+
+    const parentData = getDataByID(parentID)
+    const parentElement = getElementByID(parentID);
+
+    entriesByID[entryID] = newEntryData;
+    parentData['entries'].push(newEntryData);
+    parentElement.addSubTask(entryID);
+    if (parentElement.folded)
+        parentElement.unfold();
+
+    rebuildElementIndexList(); // TODO should this keep index?
+
+    // FIXME Should not need to deselect and re-select current selection.
+    // Needed to be able to use arrow keys after adding child for navigation
+    parentElement.deselect();
+    if (jumpIntoNewlyCreatedEntry) {
+        getElementByID(entryID).enter();
+        setFocus(FOCUS_INPUT_LINE);
+        jumpIntoNewlyCreatedEntry = false;
+    } else {
+        parentElement.select();
+    }
+}
+
+function deletingEntrySuccessful(deletedIDs) {
+    const parent = getElementByID(getDataByID(deletedIDs[0])['parent_id'])
+
+    for (let delID of deletedIDs) {
+        delete elementsByID[delID];
+        delete entriesByID[delID];
+    }
+
+    parent.removeSubTask(deletedIDs[0]);
+    rebuildElementIndexList(true);
+
+    if (elementIndexList.length > 0)
+        selectElementIndexListElementByIndex(clamp(0, elementIndexList.length - 1, elementIndexListIndex));
+}
+
+function changeTextSuccessful(entryID, newText) {
+    const data = getDataByID(entryID);
+    data['text'] = newText;
+
+    if (getCurrentTopLevelID() === entryID)
+        createTitle();
+    else
+        getElementByID(entryID).setText(newText);
+}
+
+function cutPasteSuccessful(oldParentID, newParentID, entryID, clipboard_type) {
+    if (clipboard_type == CLIPBOARD_TYPE_CUT) {
+        clipboard.type = CLIPBOARD_TYPE_EMPTY;
+        clipboard.entry_id = -1; // Probably not necessary when type is set to empty
+    }
+
+    // Update data
+    const oldParentElement = getElementByID(oldParentID);
+    if (oldParentElement) { // Prevent error when navigating to another task where oldParentElement is not part of the tree any more
+        oldParentElement.removeSubTask(entryID);
+    } else {
+        // delete from data only if element is not visible
+        // if element is visible, data-entry-deletion will be done in the element itself
+        const oldParentData = getDataByID(oldParentID);
+        const entryToDelete = getDataByID(entryID)
+        const deleteIndex = oldParentData['entries'].indexOf(entryToDelete);
+        oldParentData['entries'].splice(deleteIndex, 1);
+    }
+
+    const newParent = getElementByID(newParentID);
+    const newParentData = getDataByID(newParentID);
+
+    newParentData['entries'].push(getDataByID(entryID));
+    newParent.addSubTask(entryID); // Update visuals
+
+    const pastedEntry = getElementByID(entryID);
+    const pastedEntryData = getDataByID(entryID);
+    pastedEntryData['parent_id'] = newParentID;
+    pastedEntry.parentID = newParentID;
+
+    // Visual updates
+    newParent.unfold();
+    rebuildElementIndexList(true);
+    getElementByID(entryID).select();
+}
+/*
+function copyPasteSuccessful(copiedEntryID, newParentID, newRootID, clipboardType) {
+    // console.log(copiedEntryID, newParentID, newRootID, clipboardType);
+
+    const dataToCopy = getDataByID(copiedEntryID);
+    const newParentData = getDataByID(newParentID);
+
+    newParentData.addSubTask(getDataByID(copiedEntryID));
+}
+//*/
+function move_entry_response(entryID, delta, success) {
+    const entryElement = getElementByID(entryID);
+    if (success) {
+        entryElement.deselect(); // Required, otherwise next .select() will not be visible, because visually it will be deselected
+
+        entryElement.moveEntry(delta);
+        rebuildElementIndexList();
+
+        entryElement.select(); // Required, without this, the newly rebuilt selection index will not be used
+    }
 }

@@ -7,8 +7,10 @@ import json
 # Flask
 from flask import Flask, render_template
 
+ADDRESS = 'localhost'
+ADDRESS = '192.168.1.231'
 PORT = 8192
-DEBUG = False
+DEBUG = True
 
 # Initialize server
 app = Flask(__name__, static_folder = 'templates', static_url_path='/')
@@ -30,4 +32,4 @@ def serviceworker():
 
 if __name__ == '__main__':
     print(f"Running server on port {PORT}")
-    app.run(port=PORT)
+    app.run(ADDRESS, port=PORT)

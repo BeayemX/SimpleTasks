@@ -1,0 +1,38 @@
+{
+    "Hello new user!": {},
+    "This example tasks serve as a short introduction to the basic navigation of this app": {},
+    "To create a new entry just start typing": {},
+    "When pressing RETURN the entry will be added": {},
+    "The text can be edited by pressing F2": {},
+    "You can select entries with the up- and down-arrow": {},
+    "Entries will always be entered into the currently selected entry": {},
+    "The Right arrow key unfolds the current entry if there are subtasks": {
+        "You can use SPACE to toggle the folding-state": {}
+    },
+    "Entries can be moved up and down by holding the ALT key while using the up- and down-arrow keys": {},
+    "To move entries to another task it is possible to use CTRL + X to mark the current selection": {},
+    "By pressing CTRL+V the marked entry will be placed inside the current selection": {},
+    "To clear the selection press ESC": {},
+    "You can use RETURN while navigating to enter the selected entry": {
+        "The behaviour inside an entry is exactly the same as on the root level": {},
+        "There is no limit to the nesting levels": {},
+        "Use BACKSPACE to go up one level": {}
+    },
+    "Use the DELETE key to delete entries": {
+        "If there are subtasks the delete operation has to be confirmed": {}
+    },
+	"Mobile devices": {
+        "On mobile devices there is an action-bar on the bottom when there are selected entries to be able to use all actions without a keyboard": {},
+        "To improve the look of the app it is possible to add the app as a Progressive Web App to your phone's home screen": {
+            "This also works on desktop clients.": {}
+        },
+        "Double tap an entry to enter it": {}
+    },
+	"Advanced": {
+	    "Press the icon to the left of the input field to set the current directory as the start directory": {
+            "There will be a green border around the icon to show that a custom starting directory is set": {},
+            "Press it again to clear the starting directory": {}
+        }
+    }
+}
+

@@ -1,4 +1,13 @@
+/* Variables for easier Access
+
+Simple Tasks Green
+#398513ff
+
+*/
+
 body {
+    background-color: #222;
+    background-color: #333;
     background-color: #666;
     margin: 0;
     padding: 0;
@@ -33,7 +42,7 @@ body {
     flex-flow: row;
     margin: 0;
     padding: 7px;
-    background-color: #333;
+    background-color: #222;
 }
 
 #inputLine input {
@@ -61,7 +70,7 @@ body {
     display: flex;
     flex-flow: row;
     flex: 0;
-    background-color: #333;
+    background-color: #222;
     padding: 10px;
     align-items: center;
 
@@ -116,8 +125,12 @@ body {
     flex-flow: column;
     flex: 1;
 
-    background-color: #555;
+    background-color: #4a4a4a;
+    background-color: #444;
+    border-width: 0;
     border: 1px solid #000;
+    border: 1px solid #444a;
+
     border-radius: 3px;
 
     padding-left: 5px;
@@ -132,10 +145,17 @@ body {
 }
 .entryWrapper .entryWrapper {
     background-color: #0000001c;
+    background-color: #0003;
+    background-color: #1113;
     margin-right: -5px;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     border-right: 0px;
+}
+
+.entryWrapper.cut {
+    border: 2px dashed #398513ff;
+    border: 1px dashed white;
 }
 
 .actualTask{

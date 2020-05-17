@@ -1,4 +1,9 @@
 # Simple Tasks
+## Goals
++ This app will not enforce arbitrary limits
+  + Hate having a maximum number of sub-levels? You will enjoy Simple Tasks!
++ This app will not patronize you
+  + Want to nest dozens of tasks and scroll through all of them while they are unfoled at the same time? Do it!
 
 ## Functionality and features
 + Nested text entries  

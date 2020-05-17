@@ -4,13 +4,21 @@ const maxLength = 256; // Not used
 const LONG_PRESS_DURATION_MS = 500;
 
 class Entry {
-    constructor(entryName, entryData, parent, parentContainer, parentPath, subtasksContainer = null) {
-        // console.log(entryName, parent, parentContainer, parentPath, subtasksContainer)
-        this.name = entryName;
+    constructor(entryData, parentContainer, subtasksContainer = null) {
+
+        // Workaround for upgrading to sql
+        this.entry_id = entryData['id']
+
+        let entryName = entryData['text'];
+        // let parent = getDataByID(entryData['parent_id'])
+        let parentID = entryData['parent_id']
+
+        // console.log(entryName, parent, parentContainer, parentID, subtasksContainer)
+        this.name = entryName; // TODO rename to 'text'?
         this.data = entryData;
-        this.parent = parent; // not html element. is EntryClass
+        // this.parent = getElementByID(this.parentID); // not html element. is EntryClass
         this.parentContainer = parentContainer;
-        this.parentPath = parentPath;
+        this.parentID = parentID;
 
         // Subtasks
         this.selectedIndex = -1; // -1 if parent itself is selected (no subtask selected)
@@ -26,6 +34,10 @@ class Entry {
         this.subTasksElement; // For folding
         this.actionBar;
         this.showActionBarButton;
+
+        elementsByID[this.entry_id] = this;
+
+        this.doneSettingUp = true;
     }
     getOwner = () => {
         let currEntry = this;
@@ -38,8 +50,14 @@ class Entry {
         return currEntry;
     }
 
+    setText = (newText) => {
+        this.name = newText;
+        this.label = this.name;
+    }
+
     getParentPath = () => {
-        return copyPath(this.parentPath);
+        // return parentID
+        return copyPath(this.parentID);
     }
 
     getElementPath = () => {
@@ -68,7 +86,9 @@ class Entry {
         currentlySelectedElement = this;
         this.element.classList.add('focused');
 
-        this.parent.setSelected(this);
+        const parentElement = getElementByID(this.parentID);
+        if (parentElement)
+            parentElement.setSelected(this);
 
         if (!mouseSelection) {
             // this.getOwner().element.scrollIntoView(true);
@@ -123,10 +143,11 @@ class Entry {
     enter = () => {
         if (this.selectedIndex == -1) {
             // Enter sub-level
-            const tmpParentPath = this.getParentPath();
+            //const tmpParentPath = ;
 
-            tmpParentPath.push(this.name);
-            setPath(tmpParentPath);
+            // tmpParentPath.push(this.name);
+            //setPath(tmpParentPath);
+            setCurrentTopLevel(this.entry_id);
 
             /*
             const stateObj = {
@@ -142,8 +163,7 @@ class Entry {
      delete = (askForConfirmationForSubtasks = true) => {
         if (this.selectedIndex == -1) {
             const askConfirmation = this.subTasks.length > 0 && askForConfirmationForSubtasks;
-            const deletePath = this.getElementPath();
-            sendDelete(deletePath, askConfirmation);
+            sendDelete(this.entry_id, askConfirmation);
         } else {
             this.subTasks[this.selectedIndex].delete(askForConfirmationForSubtasks);
         }
@@ -152,7 +172,6 @@ class Entry {
 
      unfold = (recursive = false) => {
         if (this.selectedIndex == -1) {
-
             if (this.folded === false) { // Already unfolded
                 /*
                 if (this.subTasks.length > 0)
@@ -163,16 +182,13 @@ class Entry {
 
             this.folded = false;
 
-            const targetPath = getCurrentPath();
-            targetPath.push(this.name);
-
             /* TODO only if alt is pressed
             for (let subTaskElement of this.subTasks) {
                 subTaskElement.unfold();
             } //*/
             //reassignIndices();
             this.subTasksElement.style.display = "flex";
-            if (this.element) { // HACK to prevent this from being called while creating this entry itself
+            if (this.doneSettingUp) {
                 if (recursive) {
                     for (let subtask of this.subTasks)
                         subtask.unfold(recursive);
@@ -205,8 +221,8 @@ class Entry {
             } // */
             //this.subTasks = []
             // reassignIndices();
-            this.subTasksElement.style.display = "none";
-            if (this.element) { // HACK to prevent this from being called while creating this entry itself
+            this.subTasksElement.style.display = 'none';
+            if (this.doneSettingUp) {
                 if (recursive) {
                     for (let subtask of this.subTasks)
                         subtask.fold(recursive);
@@ -230,13 +246,22 @@ class Entry {
             if (FOLD_WHEN_STEPPING && !this.folded) {
                 this.fold();
             } else {
-                if (this.parent.parent) {
-                    this.deselect();
+                const parent = getElementByID(this.parentID);
+                const grandParent = getElementByID(parent.parentID);
 
-                    this.parent.selectedIndex = -1;
-                    this.parent.select();
+                if (grandParent && parent.entry_id != currentSceneRootEntry.entry_id) { // Second condidtion prevents folding top level when in sub-level
+                    if (this.folded) { // Select parent if current level already folded
+                        this.deselect();
+
+                        parent.selectedIndex = -1;
+                        parent.select();
+                    } else { // Fold current level before selecting parent
+                        this.fold();
+                    }
                 } else {
-                    this.fold();
+                    if (this.entry_id != currentSceneRootEntry.entry_id) { // Second condidtion prevents folding top level when in sub-level
+                        this.fold();
+                    }
                 }
             }
         } else {
@@ -269,8 +294,6 @@ class Entry {
         if (this.selectedIndex == -1) {
             for (let element of this.subTasks)
                 element.deselect();
-
-            previousSelectedEntryIndex = this.selectedIndex; // TODO ??
         } else {
             this.subTasks[this.selectedIndex].deselect()
         }
@@ -291,21 +314,31 @@ class Entry {
 
     moveEntry = (delta) => {
         if (this.selectedIndex == -1) {
-            let theIndex = this.parent.subTasks.indexOf(this);
-            let newPosition = theIndex + delta;
+            const parent = getElementByID(this.parentID);
+            let previousPosition = parent.subTasks.indexOf(this);
+            let newPosition = previousPosition + delta;
 
-            const subLength = this.parent.subTasks.length;
+            const subLength = parent.subTasks.length;
             newPosition = clamp(0, subLength - 1, newPosition);
 
-            if (newPosition != theIndex) {
-                send({
-                    "action": 'move_entry',
-                    "path": this.getParentPath(),
-                    "currentIndex": theIndex,
-                    "newIndex": newPosition
-                })
+            if (newPosition != previousPosition) {
+                // Change data
+                // // Remove current element temporarily
+                parent.data['entries'].splice(previousPosition, 1);
+                parent.subTasks.splice(previousPosition, 1);
+
+                parent.data['entries'].splice(newPosition, 0, this.data);
+                parent.subTasks.splice(newPosition, 0, this);
+
+                // Update visuals
+                const parentNode = this.element.parentNode;
+
+                if (delta > 0) {
+                    parentNode.insertBefore(this.element.nextSibling, this.element);
+                } else {
+                    parentNode.insertBefore(this.element, this.element.previousSibling);
+                }
             }
-            // selectedIndexAfterUpdate = newPosition; // FIXME this does not work with the new system, maybe selection-highlight does work, but things are folded...
         } else {
             this.subTasks[this.selectedIndex].moveEntry(delta);
         }
@@ -340,27 +373,9 @@ class Entry {
             this.subTasksElement.setAttribute('class', 'subTasks');
         }
 
-        // Add sub-tasks functionality
-
-        // // Initial creation of subtasks
-
-        for (let subtaskKey in this.data) {
-            const subTaskParentPath = copyPath(this.getParentPath());
-            subTaskParentPath.push(this.name);
-
-            let subTaskElement = new Entry(
-                subtaskKey, // this.name
-                this.data[subtaskKey], // this.data
-                this, // parent =
-                this.subTasksElement, // parentContainer =
-                subTaskParentPath, // subTaskParentPath // parentPath
-            );
-            this.subTasks.push(subTaskElement);
-        }
-
-
         // Add main part to show text and enter sub-level
         const label = document.createElement('div');
+        this.label = label;
         let entryText = this.name;
 
         if (cutOffLongTexts && entryText.length > maxLength){
@@ -411,7 +426,8 @@ class Entry {
             this.actionBarTimeout = setTimeout(() => {
                 this.forceSelect(true);
                 if (currentlySelectedElement == this) {
-                    //this.showActionBar();
+                    this.makeEditable();
+                    // this.showActionBar();
                 }
             }, LONG_PRESS_DURATION_MS)
         }
@@ -439,61 +455,58 @@ class Entry {
         }
         this.showActionBarButton = showActionBarButton;
 
-        // Count subtasks
-        let subTasksCounter = 0;
-        function countSubTasks(subData) { // Function for calling recursivly
-            for (let key of Object.keys(subData)) {
-                subTasksCounter += 1;
-                countSubTasks(subData[key]);
-            }
+        // Add sub-tasks functionality
+
+        // // Add sub tasks counter label
+        const subTasksCounterLabel = document.createElement('div');
+        subTasksCounterLabel.setAttribute('class', 'icon subcounter');
+        actualTask.appendChild(subTasksCounterLabel);
+
+        subTasksCounterLabel.onclick = (e) => {
+            this.toggleFold();
+            e.stopPropagation();
+            return false;
         }
-        countSubTasks(this.data);
 
-        // Add sub tasks counter label
-        if (subTasksCounter > 0) {
-            const subTasksCounterLabel = document.createElement('div');
-            subTasksCounterLabel.setAttribute('class', 'icon subcounter');
-            subTasksCounterLabel.innerText = subTasksCounter;
-            actualTask.appendChild(subTasksCounterLabel);
-
-            subTasksCounterLabel.onclick = (e) => {
-                this.toggleFold();
-                e.stopPropagation();
-                return false;
-            }
-
-            subTasksCounterLabel.ontouchstart = (e) => {
-                this.subTasksTimeout = setTimeout(() => {
-                    // this.forceSelect(true);
-                    if (this.folded) {
-                        this.unfold(true);
-                    } else {
-                        this.fold(true);
-                    }
-                }, LONG_PRESS_DURATION_MS)
-            }
-
-            const cancelLongPress2 = (e) => {
-                if (this.subTasksTimeout){
-                    clearTimeout(this.subTasksTimeout);
-                    this.subTasksTimeout = null;
+        subTasksCounterLabel.ontouchstart = (e) => {
+            this.subTasksTimeout = setTimeout(() => {
+                // this.forceSelect(true);
+                if (this.folded) {
+                    this.unfold(true);
+                } else {
+                    this.fold(true);
                 }
-            }
-            subTasksCounterLabel.ontouchend = cancelLongPress2;
-            subTasksCounterLabel.ontouchmove = cancelLongPress2;
-
-            subTasksCounterLabel.onselectstart = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-            subTasksCounterLabel.oncontextmenu = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
+            }, LONG_PRESS_DURATION_MS)
         }
 
+        const cancelLongPress2 = (e) => {
+            if (this.subTasksTimeout){
+                clearTimeout(this.subTasksTimeout);
+                this.subTasksTimeout = null;
+            }
+        }
+        subTasksCounterLabel.ontouchend = cancelLongPress2;
+        subTasksCounterLabel.ontouchmove = cancelLongPress2;
+
+        subTasksCounterLabel.onselectstart = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        subTasksCounterLabel.oncontextmenu = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+
+        this.subTasksCounterLabel = subTasksCounterLabel;
+        this.updateSubTaskCounterLabel();
+
+        // // Initial creation of subtasks
+        for (let subtask of this.data['entries']) {
+            let subtaskKey = subtask.id;
+            this.addSubTask(subtaskKey);
+        }
 
         /*
         this.unfold();
@@ -556,5 +569,97 @@ class Entry {
             parentContainer.appendChild(element);
 
         return element;
+    }
+
+    addSubTask = (subtaskKey) => {
+        const subTaskData = getDataByID(subtaskKey);
+        let subTaskElement = new Entry(
+            subTaskData, // this.data
+            this.subTasksElement, // parentContainer =
+        );
+        this.subTasks.push(subTaskElement);
+        this.updateSubTaskCounterLabel();
+    }
+
+    updateSubTaskCounterLabel = () => {
+        // Count subtasks
+        let subTasksCounter = 0;
+        function countSubTasks(subData) { // Function for calling recursivly
+            for (let entry of subData['entries']) {
+                subTasksCounter += 1;
+                countSubTasks(entry);
+            }
+        }
+        countSubTasks(this.data);
+
+        this.subTasksCounterLabel.innerText = subTasksCounter;
+
+        if (subTasksCounter > 0) {
+            this.subTasksCounterLabel.style.display = "flex";
+        } else {
+            this.subTasksCounterLabel.style.display = "none";
+        }
+
+        if (this.doneSettingUp){
+            if (this.parentID) {
+                const parentElement = getElementByID(this.parentID);
+                if (parentElement)
+                    parentElement.updateSubTaskCounterLabel();
+            }
+        }
+
+        this.selectedIndex = clamp(-1, this.subTasks.length - 1, this.selectedIndex)
+    }
+
+    removeSubTask = (subtaskID) => {
+        // if (this.subTasks.length == 0)
+            // return;
+
+        let index = 0;
+
+        for (let subtaskelement of this.subTasks){
+            if (subtaskelement.entry_id == subtaskID) {
+                break;
+            }
+            index += 1;
+        }
+        this.subTasksElement.removeChild(this.subTasks[index].element); // Remove DOM tree node
+        this.subTasks.splice(index, 1); // Remove subtask data
+
+        const deleteEntryData = getDataByID(subtaskID);
+        const deleteIndex = this.data['entries'].indexOf(deleteEntryData);
+        this.data['entries'].splice(deleteIndex, 1); // Remove task from entries-member
+
+        this.updateSubTaskCounterLabel();
+    }
+
+    makeEditable = () => {
+        this.label.setAttribute('contenteditable', true);
+        this.label.focus();
+        this.label.onblur = () => {
+            this.updateTextOnServer();
+        }
+    }
+    removeEditable = () => {
+        this.label.onblur = () => {};
+        this.label.blur();
+        this.label.setAttribute('contenteditable', false);
+    }
+    resetTextChanges = () => {
+        this.label.innerText = this.name;
+        this.removeEditable();
+    }
+
+    updateTextOnServer = () => {
+        sendRename(this.entry_id, this.label.innerText);
+        this.removeEditable();
+    }
+
+    markCut = () => {
+        this.element.classList.add('cut');
+    }
+
+    unmarkCut = () => {
+        this.element.classList.remove('cut');
     }
 }
