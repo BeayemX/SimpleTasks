@@ -89,7 +89,6 @@ function init() {
 
 function afterInitialDataLoaded() {
     setupStartingPath();
-    setTheme();
 }
 
 function setupStartingPath() {
@@ -165,6 +164,8 @@ function setCurrentTopLevel(newTopLevelID, writeHistory = true) {
     if (currentSceneRootEntry.subTasks.length == 0) {
         currentSceneRootEntry.unfold();
     }
+
+    setTheme();
 }
 function getCurrentTopLevelID() {
     return topLevelID;
