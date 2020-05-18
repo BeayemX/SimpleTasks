@@ -349,10 +349,11 @@ function getTitle() {
 }
 
 function isAtRootLevel() {
-    const topLevelEntry = getElementByID(getCurrentTopLevelID());
+    const topLevelEntry = getDataByID(getCurrentTopLevelID());
 
-    if (topLevelEntry)
-        return topLevelEntry.parentID == null;
+    if (topLevelEntry) {
+        return topLevelEntry.parent_id == null;
+    }
 
     return true;
 }
