@@ -65,6 +65,7 @@ async def move_entry(websocket, data):
         'entry_id': entry_id,
         'delta': delta
     }))
+    list_all_entries_for_user(client_id)
 
 async def delete_entry(websocket, data):
     client_id = data['client_id']
@@ -268,6 +269,8 @@ def delete_entry_from_database(client_id, entry_id):
 
         delete_recursivly(entry_id)
 
+    list_all_entries_for_user(client_id)
+
     return deleted_ids
 
 def cut_paste_entry_in_database(client_id, entry_id, target_id):
@@ -310,6 +313,17 @@ def copy_paste_entry_in_database(client_id, entry_id, target_id):
 
 def get_id():
     return uuid.uuid4().hex
+
+def list_all_entries_for_user(client_id):
+    with connect(FILE_PATH) as conn:
+        cursor = conn.cursor()
+        sql = 'SELECT parent_id, entry_id, text FROM data WHERE client_id=? ORDER BY priority ASC'
+        params = (client_id, )
+        cursor.execute(sql, params)
+
+        print(" [ Data ] ")
+        for l in cursor.fetchall():
+            print(l)
 
 def list_all():
     with connect(FILE_PATH) as conn:
