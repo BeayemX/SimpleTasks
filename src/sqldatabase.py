@@ -253,6 +253,12 @@ def delete_entry_from_database(client_id, entry_id):
         def delete_recursivly(parent_id):
             deleted_ids.append(parent_id)
 
+            # Print deleted entry to be able to "restore" accidently deleted entries
+            sql = "SELECT parent_id, entry_id, text FROM data WHERE client_id=? AND entry_id=?"
+            params = (client_id, parent_id)
+            cursor.execute(sql, params)
+            print("DELETED\t", "\t".join(cursor.fetchone()))
+
             for child_id in get_children_for(client_id, parent_id):
                 delete_recursivly(child_id)
 
