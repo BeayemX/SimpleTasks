@@ -1081,4 +1081,8 @@ function setTheme() {
     for (let actionButton of document.querySelectorAll('.toolbar > div'))
         actionButton.style.backgroundColor = textInput;
 
+    for (let cutMarkedEntries of document.querySelectorAll('.entryWrapper.cut')){
+        cutMarkedEntries.style.borderColor = '#fff';
+        cutMarkedEntries.style.borderStyle = 'dashed';
+    }
 }

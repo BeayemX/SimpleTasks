@@ -659,6 +659,7 @@ class Entry {
 
     markCut = () => {
         this.element.classList.add('cut');
+        setTheme();
     }
 
     unmarkCut = () => {
