@@ -123,6 +123,7 @@ class Entry {
             currentlySelectedElement = null;
 
         showToolbar(false);
+        setTheme();
     };
 
     showActionBar = () => {

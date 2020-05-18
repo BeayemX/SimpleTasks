@@ -125,8 +125,10 @@ body {
     background-color: #4a4a4a;
     background-color: #444;
     border-width: 0;
+    /*
+    border-left: 1px solid #000;
+    */
     border: 1px solid #000;
-    border: 1px solid #444a;
 
     border-radius: 3px;
 
@@ -270,13 +272,13 @@ body {
 
 .toolbar > div {
     float: left;
-    /*
-    width: 55px;
-    */
     flex: 1;
     height: 30px;
-
+    /*
+    width: 55px;
     border: 1px solid black;
+    */
+
     margin: 3px;
     padding: 3px;
 

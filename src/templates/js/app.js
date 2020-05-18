@@ -1037,28 +1037,48 @@ function setTheme() {
     const sideIconsBar = "#202225";
     let sideAreaBottomBar = "#292b2f";
     const sideArea = "#2f3136";
+    // const entryBorder = "#2f3136";
+    const entryBorder = "#333c";
+    //const subEntries = "#1f2126";
+    const subEntries = "#0000000d";
+
     const contentBG = "#36393f";
-    const subEntries = "#0000001a";
     const textInput = "#40444b";
     const selectedColor = '#398513ff';
+
+    const borderEdgeHighlight = '#555';
 
     document.querySelector('body').style.backgroundColor = contentBG;
     document.querySelector('#titleBar').style.backgroundColor = sideAreaBottomBar;
 
     for (let entryWrapper of document.querySelectorAll('.entryWrapper')){
         entryWrapper.style.backgroundColor = sideArea;
-        entryWrapper.style.borderColor = sideArea;
+        entryWrapper.style.borderColor = entryBorder;
+        entryWrapper.style.borderLeftColor = borderEdgeHighlight;
+        entryWrapper.style.borderBottomColor = borderEdgeHighlight;
     }
 
     for (let subEntryWrapper of document.querySelectorAll('.entryWrapper .entryWrapper'))
         subEntryWrapper.style.backgroundColor = subEntries;
 
     const selected = document.querySelector('.entryWrapper.focused');
-    if (selected)
+    if (selected){
         selected.style.backgroundColor = selectedColor;
+        // selected.style.borderColor = entryBorder;
+        selected.style.borderLeftColor = entryBorder;
+    }
+
+    for (let subEntryWrapper of document.querySelectorAll('.entryWrapper.focused .entryWrapper'))
+        subEntryWrapper.style.borderLeftColor = entryBorder;
+
 
     document.querySelector('#inputLine').style.backgroundColor = sideAreaBottomBar;
     document.querySelector('#inputLine input').style.backgroundColor = textInput;
     document.querySelector('#inputLine div button').style.backgroundColor = textInput;
+
+    document.querySelector('.toolbar').style.backgroundColor = sideAreaBottomBar;
+
+    for (let actionButton of document.querySelectorAll('.toolbar > div'))
+        actionButton.style.backgroundColor = textInput;
 
 }
