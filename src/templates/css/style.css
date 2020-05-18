@@ -349,4 +349,5 @@ body {
 
     font-family: monospace;
     font-size: 8pt;
+    pointer-events: none;
 }
