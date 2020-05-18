@@ -1,6 +1,7 @@
 // Configuration
 const cutOffLongTexts = false; // This leads to errors when trying to find elements by key (entryName) on the server side
 const startFolded = true;
+const maxPathInfoEntryLength = 10;
 
 // Constants
 const TITLE = "Simple Tasks";
@@ -166,7 +167,25 @@ function setCurrentTopLevel(newTopLevelID, writeHistory = true) {
     }
 
     setTheme();
+    let pathInfoText = "";
+    const spacer = "&nbsp;/&nbsp;";
+    function createPathInfoText(entryData) {
+        if (entryData.parent_id) {
+            let pathEntryText = entryData.text;
+            if (entryData.text.length > maxPathInfoEntryLength) {
+                pathEntryText = pathEntryText.split(' ')[0];
+            }
+            // pathEntryText = pathEntryText.substring(0, maxPathInfoEntryLength)
+
+            pathInfoText = pathEntryText + spacer + pathInfoText;
+            createPathInfoText(getDataByID(entryData.parent_id));
+        }
+    }
+    createPathInfoText(currentSceneRootEntry.data);
+    pathInfoText = spacer + pathInfoText.slice(0, -spacer.length)
+    pathInfo.innerHTML = pathInfoText;
 }
+
 function getCurrentTopLevelID() {
     return topLevelID;
 }

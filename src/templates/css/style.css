@@ -332,3 +332,21 @@ body {
     font-size: 14pt;
     margin-top: 25px;
 }
+
+#pathInfo {
+    position: absolute;
+    right:0;
+    margin: 0;
+    padding: 5px;
+    min-width: 100%;
+    overflow-x: hidden;
+    /*
+    text-align: right;
+    width: 100%;
+    */
+    background-color: #0000;
+    color: #ddd;
+
+    font-family: monospace;
+    font-size: 8pt;
+}
