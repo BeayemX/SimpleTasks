@@ -888,7 +888,9 @@ function selectNextItemInElementIndexList(delta) {
 
 function selectElementIndexListElementByIndex(index) {
     elementIndexListIndex = index;
-    elementIndexList[index].select();
+    const contender = elementIndexList[index]
+    if (contender)
+        contender.select();
 }
 
 function rebuildElementIndexList(keepCounter) {
