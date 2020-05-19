@@ -469,8 +469,8 @@ function createMenu() {
     }]);
 
 
-    buttons.push(["Use light thme", () => { setLightTheme(); }]);
-    buttons.push(["Use dark thme", () => { setDarkTheme(); }]);
+    buttons.push(["Light theme", () => { setLightTheme(); }]);
+    buttons.push(["Dark theme", () => { setDarkTheme(); }]);
 
     buttons.push(["Logout", () => {
         clearCredentials();
