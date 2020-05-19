@@ -106,7 +106,6 @@ class Entry {
 
         setFocus(FOCUS_CONTENT);
         showToolbar();
-        setTheme();
     };
 
     setSelected = (subtask) => {
@@ -123,7 +122,6 @@ class Entry {
             currentlySelectedElement = null;
 
         showToolbar(false);
-        setTheme();
     };
 
     showActionBar = () => {
@@ -659,7 +657,6 @@ class Entry {
 
     markCut = () => {
         this.element.classList.add('cut');
-        setTheme();
     }
 
     unmarkCut = () => {

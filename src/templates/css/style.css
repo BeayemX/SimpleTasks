@@ -1,10 +1,24 @@
+:root {
+    --tasksGreen: #398513ff;
+
+    --outerContentBackground: #292b2f;
+    --entryBackground: #2f3136;
+    --entryBorder: #5559;
+
+    --subEntriesBackground: #0001;
+    --subTasksCounterLabel: #fff3;
+
+    --bodyBackground: #36393f;
+    --inputElementsBackground: #40444b;
+    --dashedCut: #ddd;
+    --fontColor: #fafafa;
+}
+
 body {
-    background-color: #222;
-    background-color: #333;
-    background-color: #666;
+    background-color: var(--bodyBackground);
     margin: 0;
     padding: 0;
-    color: #fafafa;
+    color: var(--fontColor);
     font-family: 'Roboto', sans-serif;
 }
 #wrapper {
@@ -35,7 +49,7 @@ body {
     flex-flow: row;
     margin: 0;
     padding: 7px;
-    background-color: #222;
+    background-color: var(--outerContentBackground);
 }
 
 #inputLine input {
@@ -44,10 +58,10 @@ body {
     margin-left: 5px;
     margin-right: 5px;
     font-size: 14pt;
-    background-color: #ccc;
+    background-color: var(--inputElementsBackground);
     min-width: 0;
     border: 0;
-    color: #ddd;
+    color: var(--fontColor);
 }
 
 #inputLine div {
@@ -60,14 +74,15 @@ body {
     padding-left: 15px;
     padding-right: 15px;
     border: 0;
-    color: #ddd;
+    color: var(--fontColor);
+    background-color: var(--inputElementsBackground);
 }
 
 #titleBar {
     display: flex;
     flex-flow: row;
     flex: 0;
-    background-color: #222;
+    background-color: var(--outerContentBackground);
     padding: 10px;
     align-items: center;
 
@@ -89,7 +104,8 @@ body {
     padding: 7px;
 }
 #homebutton.customstartingpath {
-    border: 1px solid #398513ff;
+    /*border: 1px solid #398513ff;*/
+    border: 1px solid var(--tasksGreen);
 }
 
 .backbutton {
@@ -102,7 +118,7 @@ body {
 }
 .title {
     flex: 1;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--fontColor);
     /*
     */
     padding-left: 15px;
@@ -122,13 +138,11 @@ body {
     flex-flow: column;
     flex: 1;
 
-    background-color: #4a4a4a;
-    background-color: #444;
-    border-width: 0;
+    background-color: var(--entryBackground);
     /*
     border-left: 1px solid #000;
     */
-    border: 1px solid #000;
+    border: 1px solid var(--entryBorder);
 
     border-radius: 3px;
 
@@ -143,9 +157,7 @@ body {
     cursor: default;
 }
 .entryWrapper .entryWrapper {
-    background-color: #0000001c;
-    background-color: #0003;
-    background-color: #1113;
+    background-color: var(--subEntriesBackground);
     margin-right: -5px;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
@@ -153,8 +165,7 @@ body {
 }
 
 .entryWrapper.cut {
-    border: 2px dashed #398513ff;
-    border: 1px dashed white;
+    border: 1px dashed var(--dashedCut);;
 }
 
 .actualTask{
@@ -178,9 +189,11 @@ body {
     border: 1px solid cyan;
     box-sizing: border-box; // this does not work, it should prevent the content size from resizing when showing border
     border-left: 5px solid cyan;
-    */
     background-color: #090a;
     background-color: #398513ff;
+    */
+    background-color: var(--tasksGreen);
+
 
 }
 
@@ -211,7 +224,7 @@ body {
     cursor: default;
 }
 .subcounter {
-    background-color: #fff3;
+    background-color: var(--subTasksCounterLabel);
 
     border-radius: 15px;
     padding-left: 15px;
@@ -260,8 +273,7 @@ body {
     flex: 0;
 
     display: flex;
-    background-color: #555;
-    background-color: #333;
+    background-color: var(--outerContentBackground);
     padding: 5px;
     margin-bottom: 0;
     padding-bottom: 0;
@@ -282,7 +294,7 @@ body {
     margin: 3px;
     padding: 3px;
 
-    background-color: #fff3;
+    background-color: var(--inputElementsBackground);
     text-align: center;
     border-radius: 7px;
     display: flex;
@@ -292,7 +304,7 @@ body {
 
 .toolbar > * > div {
     flex: 1;
-    color: #fff;
+    color: var(--fontColor);
     cursor: default;
     font-size: 0.8em;
 }
@@ -345,7 +357,7 @@ body {
     width: 100%;
     */
     background-color: #0000;
-    color: #ddd;
+    color: var(--fontColor);
 
     font-family: monospace;
     font-size: 8pt;

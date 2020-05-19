@@ -166,7 +166,6 @@ function setCurrentTopLevel(newTopLevelID, writeHistory = true) {
         currentSceneRootEntry.unfold();
     }
 
-    setTheme();
     let pathInfoText = "";
     const spacer = "&nbsp;/&nbsp;";
     function createPathInfoText(entryData) {
@@ -469,6 +468,9 @@ function createMenu() {
         sendPaste(getCurrentTopLevelID());
     }]);
 
+
+    buttons.push(["Use light thme", () => { setLightTheme(); }]);
+    buttons.push(["Use dark thme", () => { setDarkTheme(); }]);
 
     buttons.push(["Logout", () => {
         clearCredentials();
@@ -911,7 +913,6 @@ function rebuildElementIndexList(keepCounter) {
 
     work(currentSceneRootEntry);
     elementIndexList.shift(); // remove first element (root element)
-    setTheme(); // HACK to also apply styles to newly created elements...
 }
 
 function setElementIndexListIndexToElement(entry){
@@ -1054,57 +1055,30 @@ function move_entry_response(entryID, delta, success) {
     }
 }
 
-function setTheme() {
-    const simpleTasksGreen = "#398513ff";
-    const sideIconsBar = "#202225";
-    let sideAreaBottomBar = "#292b2f";
-    const sideArea = "#2f3136";
-    // const entryBorder = "#2f3136";
-    const entryBorder = "#333c";
-    //const subEntries = "#1f2126";
-    const subEntries = "#0000000d";
+function setLightTheme() {
+    var html = document.getElementsByTagName('html')[0];
+    html.style.setProperty("--tasksGreen", "#398513ff");
+    html.style.setProperty("--outerContentBackground", "#ccc");
+    html.style.setProperty("--entryBackground", "#ccc");
+    html.style.setProperty("--entryBorder", "#aaa");
+    html.style.setProperty("--subEntriesBackground", "#fff2");
+    html.style.setProperty("--subTasksCounterLabel", "#0003");
+    html.style.setProperty("--bodyBackground", "#aaa");
+    html.style.setProperty("--inputElementsBackground", "#fafafa");
+    html.style.setProperty("--dashedCut", "#000");
+    html.style.setProperty("--fontColor", "#111");
+}
 
-    const contentBG = "#36393f";
-    const textInput = "#40444b";
-    const selectedColor = '#398513ff';
-
-    const borderEdgeHighlight = '#555';
-
-    document.querySelector('body').style.backgroundColor = contentBG;
-    document.querySelector('#titleBar').style.backgroundColor = sideAreaBottomBar;
-
-    for (let entryWrapper of document.querySelectorAll('.entryWrapper')){
-        entryWrapper.style.backgroundColor = sideArea;
-        entryWrapper.style.borderColor = entryBorder;
-        entryWrapper.style.borderLeftColor = borderEdgeHighlight;
-        entryWrapper.style.borderBottomColor = borderEdgeHighlight;
-    }
-
-    for (let subEntryWrapper of document.querySelectorAll('.entryWrapper .entryWrapper'))
-        subEntryWrapper.style.backgroundColor = subEntries;
-
-    const selected = document.querySelector('.entryWrapper.focused');
-    if (selected){
-        selected.style.backgroundColor = selectedColor;
-        // selected.style.borderColor = entryBorder;
-        selected.style.borderLeftColor = entryBorder;
-    }
-
-    for (let subEntryWrapper of document.querySelectorAll('.entryWrapper.focused .entryWrapper'))
-        subEntryWrapper.style.borderLeftColor = entryBorder;
-
-
-    document.querySelector('#inputLine').style.backgroundColor = sideAreaBottomBar;
-    document.querySelector('#inputLine input').style.backgroundColor = textInput;
-    document.querySelector('#inputLine div button').style.backgroundColor = textInput;
-
-    document.querySelector('.toolbar').style.backgroundColor = sideAreaBottomBar;
-
-    for (let actionButton of document.querySelectorAll('.toolbar > div'))
-        actionButton.style.backgroundColor = textInput;
-
-    for (let cutMarkedEntries of document.querySelectorAll('.entryWrapper.cut')){
-        cutMarkedEntries.style.borderColor = '#fff';
-        cutMarkedEntries.style.borderStyle = 'dashed';
-    }
+function setDarkTheme() {
+    var html = document.getElementsByTagName('html')[0];
+    html.style.setProperty("--tasksGreen", "#398513ff");
+    html.style.setProperty("--outerContentBackground", "#292b2f");
+    html.style.setProperty("--entryBackground", "#2f3136");
+    html.style.setProperty("--entryBorder", "#5559");
+    html.style.setProperty("--subEntriesBackground", "#0001");
+    html.style.setProperty("--subTasksCounterLabel", "#fff3");
+    html.style.setProperty("--bodyBackground", "#36393f");
+    html.style.setProperty("--inputElementsBackground", "#40444b");
+    html.style.setProperty("--dashedCut", "#ddd");
+    html.style.setProperty("--fontColor", "#fafafa");
 }
