@@ -699,14 +699,22 @@ function titleKeyDownHandler(e) {
 }
 
 function contentKeyDownHandler(e) {
-    if (e.key == 'ArrowLeft' && e.altKey == false) {
-        // currentlySelectedElement.fold();
-        if (currentlySelectedElement)
-            currentlySelectedElement.stepOut();
-    } else if (e.key == 'ArrowRight' && e.altKey == false) {
-        //currentlySelectedElement.unfold();
-        if (currentlySelectedElement)
-            currentlySelectedElement.stepInto();
+    if (e.key == 'ArrowLeft') {
+        if (currentlySelectedElement) {
+            if (e.altKey == true) {
+                currentlySelectedElement.fold(true);
+            } else {
+                currentlySelectedElement.stepOut();
+            }
+        }
+    } else if (e.key == 'ArrowRight') {
+        if (currentlySelectedElement) {
+            if (e.altKey == true) {
+                currentlySelectedElement.unfold(true);
+            } else {
+                currentlySelectedElement.stepInto();
+            }
+        }
     } else if (e.key == ' ') {
         if (currentlySelectedElement)
             currentlySelectedElement.toggleFold();

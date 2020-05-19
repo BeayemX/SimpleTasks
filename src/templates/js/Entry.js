@@ -177,7 +177,7 @@ class Entry {
                 if (this.subTasks.length > 0)
                     selectEntry(1);
                     //*/
-                return;
+                // return;
             }
 
             this.folded = false;
@@ -209,7 +209,7 @@ class Entry {
                     if (parent)
                     selectEntryWithIndex(parent.index)
             */
-                return;
+                //return;
             }
 
             this.folded = true;
