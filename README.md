@@ -2,6 +2,7 @@
 ## Goals
 + List tasks
   + Each entry is just a piece of text
+  + Priority is assigned via sorting
 + Each task can have subtasks
   + Each subtask has the same functionality as a top-level task
   + Each action can be executed on top-level tasks as well as on sub-level tasks
