@@ -10,23 +10,21 @@
 + Light weight
   + Only use standard HTML/CSS/JavaScript
   + No convoluted third-party libraries
++ Desktop and mobile client
 
 ## Functionality and features
-+ Desktop client
-  + Easy keyboard navigation
-+ Mobile client
-+ Clients via Progressive Web App
-+ Each task can be folded/unfolded to show/hide subtasks
-+ Nested text entries  
-+ Fast keyboard navigation
-  + inspired by code editors
-+ Usable on desktop and mobile via a web-interface
-+ SQLite as data storage
++ Usecase
+  + Structure your tasks in as many nested subtasks as you want
+    + Each task can be folded/unfolded to show/hide subtasks
+  + Basically a mind-map in a list format
 + Main audience
   + Single person task list
-  + struture your tasks in as many chunks as you want
-  + mostly for personal usage, 
-    + Large teams should probably chose another software
++ Clients via web interface (also as Progressive Web App)
+  + Desktop client
+    + Fast keyboard navigation
+      + Inspired by code editors
+  + Mobile client
++ SQLite as data storage
 + (Basic) Theming support
 
 ## Potential features
