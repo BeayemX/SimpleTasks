@@ -293,16 +293,26 @@ def cut_paste_entry_in_database(client_id, entry_id, target_id):
 
     with connect(FILE_PATH) as conn:
         cursor = conn.cursor()
-        sql = 'SELECT parent_id FROM data WHERE client_id=? AND entry_id=?'
+        # Get old data
+        sql = 'SELECT parent_id, priority FROM data WHERE client_id=? AND entry_id=?'
         params = (client_id, entry_id)
         cursor.execute(sql, params)
-        old_parent_id = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        old_parent_id = result[0]
+        old_priority = result[1]
 
+        # Assign pasted entry to new parent
         sql = 'UPDATE data SET parent_id=?, priority=? WHERE client_id=? AND entry_id=?'
         params = (target_id, len(children_of_parent), client_id, entry_id)
         cursor.execute(sql, params)
 
+        # Adjust priorities of old siblings
+        sql = "UPDATE data SET priority=priority-1 WHERE parent_id=? AND priority>?"
+        params = (old_parent_id, old_priority)
+        cursor.execute(sql, params)
+
         return old_parent_id
+
 """
 def copy_paste_entry_in_database(client_id, entry_id, target_id):
     hierarchical_data = get_entry_data_recursivly(client_id, entry_id)
