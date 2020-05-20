@@ -133,6 +133,17 @@ def setup_database():
         cursor.execute('CREATE TABLE IF NOT EXISTS data (entry_id STRING, text STRING, client_id STRING, parent_id STRING, priority INTEGER)')
         cursor.execute('CREATE TABLE IF NOT EXISTS users (id STRING, name STRING)')
 
+    if RECREATE_ENTRIES:
+        user_id = get_id()
+        user_name = 'test'
+
+        with connect(FILE_PATH) as conn:
+            cursor = conn.cursor()
+            sql = 'INSERT INTO users (id, name) VALUES(?, ?)'
+            params = (user_id, user_name)
+            cursor.execute(sql, params)
+            return user_id
+
 def user_exists(user_name):
     with connect(FILE_PATH) as conn:
         cursor = conn.cursor()
@@ -236,8 +247,8 @@ def move_entry_in_database(client_id, entry_id, delta):
         # XXX This only works when shifting elements by 1
 
         # Move other entry to new place
-        sql = "UPDATE data SET priority=? WHERE client_id=? AND priority=?"
-        params = (current_priority, client_id, target_priority)
+        sql = "UPDATE data SET priority=? WHERE client_id=? AND priority=? AND parent_id=?"
+        params = (current_priority, client_id, target_priority, parent_id)
         cursor.execute(sql, params)
 
         # Move selected entry to target place
@@ -266,6 +277,10 @@ def delete_entry_from_database(client_id, entry_id):
             sql = "DELETE FROM data WHERE client_id=? AND entry_id=?"
             params = (client_id, parent_id)
             cursor.execute(sql, params)
+
+        sql = "UPDATE data SET priority=priority-1 WHERE priority>(SELECT priority FROM data WHERE client_id=? AND entry_id=?)"
+        params = (client_id, entry_id)
+        cursor.execute(sql, params)
 
         delete_recursivly(entry_id)
 
@@ -317,7 +332,7 @@ def get_id():
 def list_all_entries_for_user(client_id):
     with connect(FILE_PATH) as conn:
         cursor = conn.cursor()
-        sql = 'SELECT parent_id, entry_id, text FROM data WHERE client_id=? ORDER BY priority ASC'
+        sql = 'SELECT parent_id, entry_id, text, priority FROM data WHERE client_id=? ORDER BY priority ASC'
         params = (client_id, )
         cursor.execute(sql, params)
 
@@ -328,7 +343,7 @@ def list_all_entries_for_user(client_id):
 def list_all():
     with connect(FILE_PATH) as conn:
         cursor = conn.cursor()
-        sql = 'SELECT client_id, parent_id, entry_id, text FROM data ORDER BY priority ASC'
+        sql = 'SELECT client_id, parent_id, entry_id, text, priority FROM data ORDER BY priority ASC'
         cursor.execute(sql)
 
         print(" [ Data ] ")
