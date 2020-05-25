@@ -984,7 +984,8 @@ function addingEntrySuccessful(newEntryData) {
     // Needed to be able to use arrow keys after adding child for navigation
     parentElement.deselect();
     if (jumpIntoNewlyCreatedEntry) {
-        getElementByID(entryID).enter();
+        // getElementByID(entryID).enter();
+        getElementByID(entryID).select();
         setFocus(FOCUS_INPUT_LINE);
         jumpIntoNewlyCreatedEntry = false;
     } else {
