@@ -170,22 +170,40 @@ function setCurrentTopLevel(newTopLevelID, writeHistory = true) {
         currentSceneRootEntry.unfold();
     }
 
+
     let pathInfoText = "";
     const spacer = "&nbsp;/&nbsp;";
     function createPathInfoText(entryData) {
+        if (!entryData) {
+            return;
+        }
+
         if (entryData.parent_id) {
             let pathEntryText = entryData.text;
             if (entryData.text.length > maxPathInfoEntryLength) {
-                pathEntryText = pathEntryText.split(' ')[0];
+                // pathEntryText = pathEntryText.split(' ')[0];
+                let splits = pathEntryText.substring(0, maxPathInfoEntryLength).split(' ');
+                if (splits.length > 1)
+                    splits.pop();
+                pathEntryText = splits.join(' ');
             }
-            // pathEntryText = pathEntryText.substring(0, maxPathInfoEntryLength)
 
             pathInfoText = pathEntryText + spacer + pathInfoText;
             createPathInfoText(getDataByID(entryData.parent_id));
+        } else {
+            if (!pathInfoText) {
+                pathInfoText += spacer;
+            }
         }
+
     }
-    createPathInfoText(currentSceneRootEntry.data);
-    pathInfoText = spacer + pathInfoText.slice(0, -spacer.length)
+
+    if (currentSceneRootEntry.entry_id !== ROOT_ID){
+        createPathInfoText(getDataByID(currentSceneRootEntry.data.parent_id));
+        if (pathInfoText !== spacer)
+            pathInfoText = spacer + pathInfoText;
+
+    }
     pathInfo.innerHTML = pathInfoText;
 }
 
