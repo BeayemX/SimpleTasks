@@ -4,6 +4,7 @@ const startFolded = true;
 const maxPathInfoEntryLength = 10;
 
 // Constants
+const USE_HISTORY_API = false;
 const TITLE = "Simple Tasks";
 const DELETE_ICON = "&#10060;";
 // const BACK_ARROW = "&#129120;";
@@ -150,7 +151,7 @@ function restoreHistory(entryID){
 function setCurrentTopLevel(newTopLevelID, writeHistory = true) {
     topLevelID = newTopLevelID;
 
-    if (writeHistory) {
+    if (USE_HISTORY_API && writeHistory) {
         console.log("set history", getDataByID(topLevelID)['text'])
         window.history.pushState({
             "topLevelID": topLevelID
@@ -299,7 +300,7 @@ function addEntryFromInput(jumpInto) {
 }
 
 function createInputLine() {
-    // Create Logo
+    // Create Logo button // not used
     let homebutton = document.createElement('div');
     let icon = document.createElement('img');
     homebutton.setAttribute('id', "homebutton");
@@ -307,12 +308,18 @@ function createInputLine() {
     homebutton.appendChild(icon);
 
     homebutton.onclick = () => {  // TODO use long press?
-        if (startingEntryID == getCurrentTopLevelID())
-            clearStartingPath();
-        else
-            makeCurrentPathStartingPath();
+        toggleStaringDirectory();
     };
 
+    // Add directory up button
+    let directoryUpButton = document.createElement('div');
+    icon = document.createElement('img');
+    directoryUpButton.setAttribute('id', "homebutton");
+    icon.setAttribute('src', "images/DirectoryUpIcon.svg");
+    directoryUpButton.appendChild(icon);
+    directoryUpButton.onclick = () => { goUp(); };
+
+    // Add input line
     input = document.createElement('input');
     input.onclick = () => {
     }
@@ -335,7 +342,8 @@ function createInputLine() {
     sendButtonWrapper.appendChild(sendButton);
 
     // Add to app
-    inputLine.appendChild(homebutton);
+    // inputLine.appendChild(homebutton);
+    inputLine.appendChild(directoryUpButton);
     inputLine.appendChild(input);
     inputLine.appendChild(sendButtonWrapper);
 }
@@ -468,15 +476,18 @@ function createMenu() {
         sendPaste(getCurrentTopLevelID());
     }]);
 
-
     buttons.push(["Light theme", () => { setLightTheme(); }]);
     buttons.push(["Dark theme", () => { setDarkTheme(); }]);
 
+    buttons.push(["Set starting path", () => { makeCurrentPathStartingPath(); }])
+    buttons.push(["Clear starting path", () => { clearStartingPath(); }])
+
     buttons.push(["Logout", () => {
         clearCredentials();
-        window.history.go();
+        if (USE_HISTORY_API) {
+            window.history.go();
+        }
     }]);
-
 
     for (let button of buttons) {
         const buttonElement = document.createElement('button');
@@ -1089,4 +1100,12 @@ function setDarkTheme() {
     html.style.setProperty("--inputElementsBackground", "#40444b");
     html.style.setProperty("--dashedCut", "#ddd");
     html.style.setProperty("--fontColor", "#fafafa");
+}
+
+// not used
+function toggleStaringDirectory() {
+    if (startingEntryID == getCurrentTopLevelID())
+            clearStartingPath();
+        else
+            makeCurrentPathStartingPath();
 }
