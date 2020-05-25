@@ -645,7 +645,9 @@ function showToolbar(value = true) {
 
 function goUp() {
     if (currentSceneRootEntry.parentID) {
+        const previousSelectedID = getCurrentTopLevelID();
         setCurrentTopLevel(currentSceneRootEntry.parentID);
+        getElementByID(previousSelectedID).select();
     }
 }
 
