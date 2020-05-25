@@ -12,6 +12,10 @@ const BACK_ARROW = "../";
 const STARTING_ENTRY_ID = 'StartingEntryID';
 const MENU_ICON = "&#8942;";
 
+// // Modifications for adding entry
+const ADD_MODIFICATION_ENTER = "enter";
+const ADD_MODIFICATION_SELECT = "select";
+
 // // Focus
 const FOCUS_INPUT_LINE = "input";
 const FOCUS_TITLE = "title";
@@ -29,7 +33,6 @@ let elementIndexListIndex = 0;
 
 // // Starting path
 let startingEntryID;
-let jumpIntoNewlyCreatedEntry = false;
 
 // // Focus
 let currentFocus = FOCUS_CONTENT;
@@ -282,7 +285,9 @@ function updateDisplayedData() {
         afterInitialDataLoaded();
 }
 
-function addEntryFromInput(jumpInto) {
+function addEntryFromInput(addModification) {
+    cachedAddModification = addModification;
+
     const potentialText = input.value;
     const actualInputValue = potentialText.trim();
 
@@ -291,10 +296,6 @@ function addEntryFromInput(jumpInto) {
 
     const newEntryText = actualInputValue;
     input.value = '';
-
-    if (jumpInto) {
-        jumpIntoNewlyCreatedEntry = true;
-    }
 
     addEntry(newEntryText);
 }
@@ -324,9 +325,15 @@ function createInputLine() {
     input.onclick = () => {
     }
 
-    input.onkeypress = (e) => {
+    input.onkeyup = (e) => { // onkeypressed does not work for the combination: Enter + Alt
         if (e.key == 'Enter') {
-            addEntryFromInput(e.shiftKey);
+            let addModification = null;
+            if (e.shiftKey) {
+                addModification = ADD_MODIFICATION_SELECT;
+            } else if (e.altKey){
+                addModification = ADD_MODIFICATION_ENTER;
+            }
+            addEntryFromInput(addModification);
         }
     }
 
@@ -983,11 +990,14 @@ function addingEntrySuccessful(newEntryData) {
     // FIXME Should not need to deselect and re-select current selection.
     // Needed to be able to use arrow keys after adding child for navigation
     parentElement.deselect();
-    if (jumpIntoNewlyCreatedEntry) {
-        // getElementByID(entryID).enter();
-        getElementByID(entryID).select();
+
+    if (cachedAddModification) {
+        if (cachedAddModification == ADD_MODIFICATION_ENTER)
+            getElementByID(entryID).enter();
+        else if (cachedAddModification == ADD_MODIFICATION_SELECT)
+            getElementByID(entryID).select();
+
         setFocus(FOCUS_INPUT_LINE);
-        jumpIntoNewlyCreatedEntry = false;
     } else {
         parentElement.select();
     }
