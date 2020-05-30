@@ -65,7 +65,8 @@ async def move_entry(websocket, data):
         'entry_id': entry_id,
         'delta': delta
     }))
-    list_all_entries_for_user(client_id)
+
+    list_direct_children(client_id, get_parent_id_for_entry_id(client_id, entry_id))
 
 async def delete_entry(websocket, data):
     client_id = data['client_id']
@@ -262,6 +263,9 @@ def move_entry_in_database(client_id, entry_id, delta):
     return True
 
 def delete_entry_from_database(client_id, entry_id):
+
+    parent_id = get_parent_id_for_entry_id(client_id, entry_id) # Needed after deletion for fixing priorities
+
     deleted_ids = []
     with connect(FILE_PATH) as conn:
         cursor = conn.cursor()
@@ -287,7 +291,8 @@ def delete_entry_from_database(client_id, entry_id):
 
         delete_recursivly(entry_id)
 
-    list_all_entries_for_user(client_id)
+    fix_priorities_for_level(client_id, parent_id)
+    list_direct_children(client_id, parent_id)
 
     return deleted_ids
 
@@ -353,6 +358,19 @@ def fix_priorities_recursivly(client_id):
 
     work_entry(ROOT_ID)
 """
+
+def get_parent_id_for_entry_id(client_id, entry_id):
+    with connect(FILE_PATH) as conn:
+        cursor = conn.cursor()
+        sql = 'SELECT parent_id FROM data WHERE client_id=? AND entry_id=?'
+        params = (client_id, entry_id)
+        cursor.execute(sql, params)
+        result = cursor.fetchone()
+        print("result")
+        print(result)
+        parent_id = result[0]
+
+        return parent_id
 
 # HACK this should not be necessary
 # This reassigns priorities to all children entries to make sure
