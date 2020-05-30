@@ -256,6 +256,9 @@ def move_entry_in_database(client_id, entry_id, delta):
         params = (target_priority, client_id, entry_id)
         cursor.execute(sql, params)
 
+    fix_priorities_for_level(client_id, parent_id)
+    list_direct_children(client_id, parent_id)
+
     return True
 
 def delete_entry_from_database(client_id, entry_id):
@@ -311,7 +314,12 @@ def cut_paste_entry_in_database(client_id, entry_id, target_id):
         params = (old_parent_id, old_priority)
         cursor.execute(sql, params)
 
-        return old_parent_id
+    fix_priorities_for_level(client_id, old_parent_id)
+    fix_priorities_for_level(client_id, target_id)
+
+    list_direct_children(client_id, target_id)
+
+    return old_parent_id
 
 """
 def copy_paste_entry_in_database(client_id, entry_id, target_id):
@@ -330,6 +338,46 @@ def copy_paste_entry_in_database(client_id, entry_id, target_id):
 
     return all_new_ids[0] # return new root element
 """
+"""
+# This does not work because SQLite does not support variables
+def fix_priorities_recursivly(client_id):
+    def work_entry(parent_id):
+        with connect(FILE_PATH) as conn:
+            cursor = conn.cursor()
+            sql = "SET @i:=0; UPDATE data SET priority = @i:=(@i+1) WHERE client_id=?, parent_id=?"
+            params = (client_id, parent_id, )
+            cursor.execute(sql, params)
+
+        for child_id in get_children_for(client_id, parent_id):
+            work_entry(child_id)
+
+    work_entry(ROOT_ID)
+"""
+
+# HACK this should not be necessary
+# This reassigns priorities to all children entries to make sure
+# that there are no duplicates and no gaps
+def fix_priorities_for_level(client_id, parent_id):
+    priority = 0
+
+    with connect(FILE_PATH) as conn:
+        cursor = conn.cursor()
+
+        sql = 'SELECT entry_id FROM data WHERE client_id=? and parent_id=? ORDER BY priority ASC'
+        params = (client_id, parent_id)
+        cursor.execute(sql, params)
+
+        direct_children = cursor.fetchall()
+
+        for child_entry in direct_children:
+            child_id = child_entry[0]
+
+            sql = 'UPDATE data SET priority=? WHERE client_id=? AND entry_id=?'
+            params = (priority, client_id, child_id)
+            cursor.execute(sql, params)
+
+            priority += 1
+
 
 
 # # # # # # # # # # #
@@ -347,6 +395,17 @@ def list_all_entries_for_user(client_id):
         cursor.execute(sql, params)
 
         print(" [ Data ] ")
+        for l in cursor.fetchall():
+            print(l)
+
+def list_direct_children(client_id, parent_id):
+    with connect(FILE_PATH) as conn:
+        cursor = conn.cursor()
+        sql = 'SELECT parent_id, entry_id, text, priority FROM data WHERE client_id=? AND parent_id=? ORDER BY priority ASC'
+        params = (client_id, parent_id)
+        cursor.execute(sql, params)
+
+        print(" [ Direct Children ] ")
         for l in cursor.fetchall():
             print(l)
 
