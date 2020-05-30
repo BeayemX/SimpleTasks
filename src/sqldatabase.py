@@ -420,6 +420,15 @@ def fix_priorities_for_level(client_id, parent_id):
 def get_id():
     return uuid.uuid4().hex
 
+def get_client_id_for_username(username):
+    with connect(FILE_PATH) as conn:
+        cursor = conn.cursor()
+        sql = 'SELECT id FROM users WHERE name=?'
+        params = (username, )
+        cursor.execute(sql, params)
+
+        return cursor.fetchone()[0]
+
 def list_all_entries_for_user(client_id):
     with connect(FILE_PATH) as conn:
         cursor = conn.cursor()
