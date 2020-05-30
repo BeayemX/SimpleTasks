@@ -375,6 +375,21 @@ def get_parent_id_for_entry_id(client_id, entry_id):
 # HACK this should not be necessary
 # This reassigns priorities to all children entries to make sure
 # that there are no duplicates and no gaps
+def fix_priorities_recursivly(user_name):
+    print(f"Fixing priorities for {user_name}")
+    client_id = get_client_id_for_username(user_name)
+    client_id = user_name # FIXME why does this not use the real client_id?
+
+    def work(parent_id, level):
+        fix_priorities_for_level(client_id, parent_id)
+        # list_direct_children(client_id, parent_id)
+        print(f'{"    " * level}{get_text_for_id(client_id, parent_id)}')
+
+        for child_id in get_children_for(client_id, parent_id):
+            work(child_id, level+1)
+
+    work(ROOT_ID, 0)
+
 def fix_priorities_for_level(client_id, parent_id):
     priority = 0
 

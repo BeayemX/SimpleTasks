@@ -6,7 +6,7 @@ import json
 
 from  sqlite3 import connect
 
-from sqldatabase import FILE_PATH, ROOT_ID, user_exists, get_id, database_add_entry
+from sqldatabase import FILE_PATH, ROOT_ID, user_exists, get_id, database_add_entry, fix_priorities_recursivly
 
 
 def add_user(user_name):
@@ -77,10 +77,21 @@ def cli_import_json():
     except FileNotFoundError:
         print("The file does not exist!")
 
+def cli_fix_priorities():
+    if len(sys.argv) < 3:
+        print("Missing user names")
+        return
+
+    user_list = sys.argv[2:]
+
+    for user_name in user_list:
+        fix_priorities_recursivly(user_name)
+
 if __name__ == "__main__":
     actions = {
         'adduser': cli_add_user,
         'import': cli_import_json,
+        'fix_priorities': cli_fix_priorities,
     }
 
     if len(sys.argv) < 2:
