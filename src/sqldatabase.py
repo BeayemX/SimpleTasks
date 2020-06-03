@@ -285,13 +285,14 @@ def delete_entry_from_database(client_id, entry_id):
             params = (client_id, parent_id)
             cursor.execute(sql, params)
 
-        sql = "UPDATE data SET priority=priority-1 WHERE priority>(SELECT priority FROM data WHERE client_id=? AND entry_id=?)"
-        params = (client_id, entry_id)
+        sql = "UPDATE data SET priority=priority-1 WHERE priority>(SELECT priority FROM data WHERE client_id=? AND entry_id=?) WHERE client_id=? AND parent_id=?"
+        params = (client_id, entry_id, client_id, parent_id)
+
         cursor.execute(sql, params)
 
         delete_recursivly(entry_id)
 
-    fix_priorities_for_level(client_id, parent_id)
+    # fix_priorities_for_level(client_id, parent_id)
     list_direct_children(client_id, parent_id)
 
     return deleted_ids
@@ -319,8 +320,8 @@ def cut_paste_entry_in_database(client_id, entry_id, target_id):
         params = (old_parent_id, old_priority)
         cursor.execute(sql, params)
 
-    fix_priorities_for_level(client_id, old_parent_id)
-    fix_priorities_for_level(client_id, target_id)
+    # fix_priorities_for_level(client_id, old_parent_id)
+    # fix_priorities_for_level(client_id, target_id)
 
     list_direct_children(client_id, target_id)
 
@@ -410,7 +411,6 @@ def fix_priorities_for_level(client_id, parent_id):
             cursor.execute(sql, params)
 
             priority += 1
-
 
 
 # # # # # # # # # # #
