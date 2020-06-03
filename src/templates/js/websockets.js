@@ -1,4 +1,4 @@
-const URL = 'ws://' + document.domain + ':8193';
+const URL = 'wss://' + document.domain + ':8193';
 const RECONNECT_TIMEOUT = 2500;
 
 let ws;
