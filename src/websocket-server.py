@@ -5,8 +5,6 @@ import json
 import uuid
 
 import websockets
-import ssl
-import pathlib
 
 # Project
 import sqldatabase as sql
@@ -82,14 +80,7 @@ async def unregister(websocket):
 
 sql.initialize()
 
-# Use SSL certificate
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-localhost_pem = pathlib.Path(__file__).with_name("localhost.pem")
-ssl_context.load_cert_chain(localhost_pem)
-
-websocket_server = websockets.serve(handle_messages, ADDRESS, PORT, ssl=ssl_context)
-
 # Start server loop
 print("Starting server on port " + str(PORT))
-asyncio.get_event_loop().run_until_complete(websocket_server)
+asyncio.get_event_loop().run_until_complete(websockets.serve(handle_messages, ADDRESS, PORT))
 asyncio.get_event_loop().run_forever()
