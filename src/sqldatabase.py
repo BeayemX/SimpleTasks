@@ -285,7 +285,7 @@ def delete_entry_from_database(client_id, entry_id):
             params = (client_id, parent_id)
             cursor.execute(sql, params)
 
-        sql = "UPDATE data SET priority=priority-1 WHERE priority>(SELECT priority FROM data WHERE client_id=? AND entry_id=?) WHERE client_id=? AND parent_id=?"
+        sql = "UPDATE data SET priority=priority-1 WHERE priority>(SELECT priority FROM data WHERE client_id=? AND entry_id=?) AND client_id=? AND parent_id=?"
         params = (client_id, entry_id, client_id, parent_id)
 
         cursor.execute(sql, params)
